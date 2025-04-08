@@ -3,21 +3,28 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>project-12306</artifactId>
-        <groupId>com.example</groupId>
+        <groupId>org.project12306</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>commons</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>commons</name>
     <url>http://maven.apache.org</url>
+    <modules>
+        <module>designpattern</module>
+        <module>base</module>
+        <module>convention</module>
+        <module>web</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+
     </dependencies>
 </project>
