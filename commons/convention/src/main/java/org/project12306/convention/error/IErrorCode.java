@@ -1,4 +1,4 @@
-package org.project12306.error;
+package org.project12306.convention.error;
 
 public interface IErrorCode {
     /**

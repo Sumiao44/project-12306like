@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.services.userservice.dao.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.project12306.services.userservice.dao.entity.UserDO;
 
 /**
- * 用户信息接口层
+ * 用户信息持久层
  */
-public interface UserService {
+public interface UserMapper extends BaseMapper<UserDO> {
+
     /**
-     * 根据证件类型和证件号查询注销次数
+     * 注销用户
      *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
+     * @param userDO 注销用户入参
      */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+    void deletionUser(UserDO userDO);
 }

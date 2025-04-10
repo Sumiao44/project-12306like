@@ -18,7 +18,7 @@
 package org.project12306.services.userservice.service.handler.filter.user;
 
 import lombok.RequiredArgsConstructor;
-import org.project12306.exception.ClientException;
+import org.project12306.convention.exception.ClientException;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.project12306.services.userservice.service.UserService;
 import org.springframework.stereotype.Component;

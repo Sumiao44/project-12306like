@@ -17,7 +17,7 @@
 
 package org.project12306.services.userservice.service.handler.filter.user;
 
-import org.project12306.exception.ClientException;
+import org.project12306.convention.exception.ClientException;
 import org.project12306.services.userservice.common.enums.UserRegisterErrorCodeEnum;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.springframework.stereotype.Component;

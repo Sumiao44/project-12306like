@@ -1,4 +1,4 @@
-package org.project12306;
+package org.project12306.base;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

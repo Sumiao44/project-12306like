@@ -15,18 +15,14 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.services.userservice.dao.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.project12306.services.userservice.dao.entity.UserReuseDO;
 
 /**
- * 用户信息接口层
+ * 用户名复用持久层
+ * 公众号：马丁玩编程，回复：加群，添加马哥微信（备注：12306）获取项目资料
  */
-public interface UserService {
-    /**
-     * 根据证件类型和证件号查询注销次数
-     *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
-     */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+public interface UserReuseMapper extends BaseMapper<UserReuseDO> {
 }

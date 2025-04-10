@@ -15,18 +15,30 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.convention.exception;
+
+import lombok.Getter;
+import org.project12306.convention.error.IErrorCode;
+import org.springframework.util.StringUtils;
+
+import java.rmi.RemoteException;
+import java.util.Optional;
 
 /**
- * 用户信息接口层
+ * @see ClientException
+ * @see ServiceException
+ * @see RemoteException
  */
-public interface UserService {
-    /**
-     * 根据证件类型和证件号查询注销次数
-     *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
-     */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+@Getter
+public abstract class AbstractException extends RuntimeException {
+
+    public final String errorCode;
+
+    public final String errorMessage;
+
+    public AbstractException(String message, Throwable throwable, IErrorCode errorCode) {
+        super(message, throwable);
+        this.errorCode = errorCode.code();
+        this.errorMessage = Optional.ofNullable(StringUtils.hasLength(message) ? message : null).orElse(errorCode.message());
+    }
 }

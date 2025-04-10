@@ -15,18 +15,42 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.services.userservice.dao.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.project12306.database.base.BaseDO;
 
 /**
- * 用户信息接口层
+ * 用户邮箱表实体对象
  */
-public interface UserService {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@TableName("t_user_mail")
+public class UserMailDO extends BaseDO {
+
     /**
-     * 根据证件类型和证件号查询注销次数
-     *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
+     * id
      */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+    private Long id;
+
+    /**
+     * 用户名
+     */
+    private String username;
+
+    /**
+     * 手机号
+     */
+    private String mail;
+
+    /**
+     * 注销时间戳
+     */
+    private Long deletionTime;
 }

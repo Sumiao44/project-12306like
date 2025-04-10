@@ -15,18 +15,19 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.cache.core;
 
 /**
- * 用户信息接口层
+ * 缓存过滤
  */
-public interface UserService {
+@FunctionalInterface
+public interface CacheGetFilter<T> {
+
     /**
-     * 根据证件类型和证件号查询注销次数
+     * 缓存过滤
      *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
+     * @param param 输出参数
+     * @return {@code true} 如果输入参数匹配，否则 {@link Boolean#TRUE}
      */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+    boolean filter(T param);
 }

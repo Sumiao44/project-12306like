@@ -15,18 +15,30 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.services.userservice.common.constant;
 
 /**
- * 用户信息接口层
+ * Redis Key 定义常量类
  */
-public interface UserService {
+public final class RedisKeyConstant {
+
     /**
-     * 根据证件类型和证件号查询注销次数
-     *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
+     * 用户注册锁，Key Prefix + 用户名
      */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+    public static final String LOCK_USER_REGISTER = "project-12306-user-service:lock:user-register:";
+
+    /**
+     * 用户注销锁，Key Prefix + 用户名
+     */
+    public static final String USER_DELETION = "project-12306-user-service:user-deletion:";
+
+    /**
+     * 用户注册可复用用户名分片，Key Prefix + Idx
+     */
+    public static final String USER_REGISTER_REUSE_SHARDING = "project-12306-user-service:user-reuse:";
+
+    /**
+     * 用户乘车人列表，Key Prefix + 用户名
+     */
+    public static final String USER_PASSENGER_LIST = "project-12306-user-service:user-passenger-list:";
 }

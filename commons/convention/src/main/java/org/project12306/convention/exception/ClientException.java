@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.project12306.exception;
+package org.project12306.convention.exception;
 
 
-import org.project12306.error.BaseErrorCode;
-import org.project12306.error.IErrorCode;
+import org.project12306.convention.error.IErrorCode;
+import org.project12306.convention.error.BaseErrorCode;
 
 /**
  * 客户端异常

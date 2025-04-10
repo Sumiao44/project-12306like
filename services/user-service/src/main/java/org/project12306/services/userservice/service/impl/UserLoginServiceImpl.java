@@ -18,16 +18,38 @@
 package org.project12306.services.userservice.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.project12306.cache.DistributedCache;
 import org.project12306.desingnpattern.chain.AbstractChainContext;
+import org.project12306.convention.exception.ServiceException;
 import org.project12306.services.userservice.common.enums.UserChainMarkEnum;
+import org.project12306.services.userservice.dao.entity.UserDO;
+import org.project12306.services.userservice.dao.entity.UserMailDO;
+import org.project12306.services.userservice.dao.entity.UserPhoneDO;
+import org.project12306.services.userservice.dao.entity.UserReuseDO;
+import org.project12306.services.userservice.dao.mapper.UserMailMapper;
+import org.project12306.services.userservice.dao.mapper.UserMapper;
+import org.project12306.services.userservice.dao.mapper.UserPhoneMapper;
+import org.project12306.services.userservice.dao.mapper.UserReuseMapper;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.project12306.services.userservice.dto.resp.UserRegisterRespDTO;
 import org.project12306.services.userservice.service.UserLoginService;
 import org.project12306.services.userservice.service.UserService;
+import org.project12306.general.toolkit.BeanUtil;
+import org.redisson.api.RBloomFilter;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
+
+import static org.project12306.services.userservice.common.constant.RedisKeyConstant.LOCK_USER_REGISTER;
+import static org.project12306.services.userservice.common.constant.RedisKeyConstant.USER_REGISTER_REUSE_SHARDING;
+import static org.project12306.services.userservice.common.enums.UserRegisterErrorCodeEnum.*;
+import static org.project12306.general.toolkit.UserReuseUtil.hashShardingIdx;
 
 /**
  * 用户登录接口实现
@@ -52,18 +74,22 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Override
     public UserRegisterRespDTO register(UserRegisterReqDTO requestParam) {
         abstractChainContext.handler(UserChainMarkEnum.USER_REGISTER_FILTER.name(), requestParam);
+        //通过用户名获取一把锁
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER + requestParam.getUsername());
         boolean tryLock = lock.tryLock();
         if (!tryLock) {
+            //失败说明正好有其它用户也在注册，并且用户名与当前事务用户名一致，其他用户的事务持有锁
             throw new ServiceException(HAS_USERNAME_NOTNULL);
         }
         try {
             try {
                 int inserted = userMapper.insert(BeanUtil.convert(requestParam, UserDO.class));
+                //修改行数有误，抛出插入用户异常
                 if (inserted < 1) {
                     throw new ServiceException(USER_REGISTER_FAIL);
                 }
             } catch (DuplicateKeyException dke) {
+                //用户名重复异常
                 log.error("用户名 [{}] 重复注册", requestParam.getUsername());
                 throw new ServiceException(HAS_USERNAME_NOTNULL);
             }
@@ -93,7 +119,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             userReuseMapper.delete(Wrappers.update(new UserReuseDO(username)));
             StringRedisTemplate instance = (StringRedisTemplate) distributedCache.getInstance();
             instance.opsForSet().remove(USER_REGISTER_REUSE_SHARDING + hashShardingIdx(username), username);
-            // 布隆过滤器设计问题：设置多大、碰撞率以及初始容量不够了怎么办？详情查看：https://nageoffer.com/12306/question
+
             userRegisterCachePenetrationBloomFilter.add(username);
         } finally {
             lock.unlock();

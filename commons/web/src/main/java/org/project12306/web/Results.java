@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.project12306;
+package org.project12306.web;
 
 
-import org.project12306.error.BaseErrorCode;
-import org.project12306.exception.AbstractException;
-import org.project12306.result.Result;
+import org.project12306.convention.error.BaseErrorCode;
+import org.project12306.convention.exception.AbstractException;
+import org.project12306.convention.result.Result;
 
 import java.util.Optional;
 

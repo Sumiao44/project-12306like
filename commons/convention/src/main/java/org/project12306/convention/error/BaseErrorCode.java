@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.project12306.error;
+package org.project12306.convention.error;
 
 /**
  * 基础错误码定义

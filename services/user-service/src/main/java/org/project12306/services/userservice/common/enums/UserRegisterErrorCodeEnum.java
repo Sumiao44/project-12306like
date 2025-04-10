@@ -18,7 +18,7 @@
 package org.project12306.services.userservice.common.enums;
 
 import lombok.AllArgsConstructor;
-import org.project12306.error.IErrorCode;
+import org.project12306.convention.error.IErrorCode;
 
 /**
  * 用户注册错误码枚举

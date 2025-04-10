@@ -1,9 +1,7 @@
 package org.project12306.desingnpattern.chain;
 
-import jdk.jfr.DataAmount;
-import org.project12306.ApplicationContextHolder;
+import org.project12306.base.ApplicationContextHolder;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.util.CollectionUtils;
 

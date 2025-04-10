@@ -15,30 +15,16 @@
  * limitations under the License.
  */
 
-package org.project12306.exception;
-
-import lombok.Getter;
-import org.project12306.error.IErrorCode;
-import org.springframework.util.StringUtils;
-
-import java.rmi.RemoteException;
-import java.util.Optional;
+package org.project12306.cache.core;
 
 /**
- * @see ClientException
- * @see ServiceException
- * @see RemoteException
+ * 缓存加载器
  */
-@Getter
-public abstract class AbstractException extends RuntimeException {
+@FunctionalInterface
+public interface CacheLoader<T> {
 
-    public final String errorCode;
-
-    public final String errorMessage;
-
-    public AbstractException(String message, Throwable throwable, IErrorCode errorCode) {
-        super(message, throwable);
-        this.errorCode = errorCode.code();
-        this.errorMessage = Optional.ofNullable(StringUtils.hasLength(message) ? message : null).orElse(errorCode.message());
-    }
+    /**
+     * 加载缓存
+     */
+    T load();
 }

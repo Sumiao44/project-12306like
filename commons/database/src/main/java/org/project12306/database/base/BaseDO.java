@@ -15,18 +15,35 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.database.base;
+
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+
+import java.util.Date;
 
 /**
- * 用户信息接口层
+ * 数据持久层基础属性
  */
-public interface UserService {
+@Data
+public class BaseDO {
+
     /**
-     * 根据证件类型和证件号查询注销次数
-     *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
+     * 创建时间
      */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+
+    /**
+     * 修改时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+
+    /**
+     * 删除标志
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private Integer delFlag;
 }

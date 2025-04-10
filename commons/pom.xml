@@ -18,6 +18,9 @@
         <module>base</module>
         <module>convention</module>
         <module>web</module>
+        <module>database</module>
+        <module>general</module>
+        <module>cache</module>
     </modules>
 
     <properties>

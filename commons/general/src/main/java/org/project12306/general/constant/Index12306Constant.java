@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service;
+package org.project12306.general.constant;
 
 /**
- * 用户信息接口层
+ * 系统级公共常量
  */
-public interface UserService {
+public final class Index12306Constant {
+
     /**
-     * 根据证件类型和证件号查询注销次数
-     *
-     * @param idType 证件类型
-     * @param idCard 证件号
-     * @return 注销次数
+     * 用户注册可复用用户名分片数
      */
-    Integer queryUserDeletionNum(Integer idType, String idCard);
+    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
 }
