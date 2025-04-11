@@ -1,6 +1,6 @@
 package org.project12306.desingnpattern.chain;
 
-import org.project12306.base.ApplicationContextHolder;
+import org.project12306.commons.base.ApplicationContextHolder;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.Ordered;
 import org.springframework.util.CollectionUtils;
