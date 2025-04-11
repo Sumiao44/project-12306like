@@ -22,7 +22,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project12306.cache.DistributedCache;
-import org.project12306.desingnpattern.chain.AbstractChainContext;
+import org.project12306.commons.desingnpattern.chain.AbstractChainContext;
 import org.project12306.convention.exception.ServiceException;
 import org.project12306.services.userservice.common.enums.UserChainMarkEnum;
 import org.project12306.services.userservice.dao.entity.UserDO;
@@ -37,7 +37,7 @@ import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.project12306.services.userservice.dto.resp.UserRegisterRespDTO;
 import org.project12306.services.userservice.service.UserLoginService;
 import org.project12306.services.userservice.service.UserService;
-import org.project12306.general.toolkit.BeanUtil;
+import org.project12306.commons.general.toolkit.BeanUtil;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -49,7 +49,7 @@ import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 import static org.project12306.services.userservice.common.constant.RedisKeyConstant.LOCK_USER_REGISTER;
 import static org.project12306.services.userservice.common.constant.RedisKeyConstant.USER_REGISTER_REUSE_SHARDING;
 import static org.project12306.services.userservice.common.enums.UserRegisterErrorCodeEnum.*;
-import static org.project12306.general.toolkit.UserReuseUtil.hashShardingIdx;
+import static org.project12306.commons.general.toolkit.UserReuseUtil.hashShardingIdx;
 
 /**
  * 用户登录接口实现

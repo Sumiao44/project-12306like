@@ -44,6 +44,13 @@ public final class CustomDbHashModShardingAlgorithm implements StandardShardingA
         tableShardingCount = getTableShardingCount(props);
     }
 
+    /**
+     * 通过对分片数量取模再除去总表数得到分库位置
+     *  然后配置文件中指定了使用哈希取模的方式得到分表位置
+     * @param availableTargetNames 目标数据库/表名集合
+     * @param shardingValue shardingsphere提供的索引工具。
+     * @return
+     */
     @Override
     public String doSharding(final Collection<String> availableTargetNames, final PreciseShardingValue<Comparable<?>> shardingValue) {
         String suffix = String.valueOf(hashShardingValue(shardingValue.getValue()) % shardingCount / tableShardingCount);

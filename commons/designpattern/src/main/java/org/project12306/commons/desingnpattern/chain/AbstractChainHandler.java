@@ -1,4 +1,4 @@
-package org.project12306.desingnpattern.chain;
+package org.project12306.commons.desingnpattern.chain;
 
 import org.springframework.core.Ordered;
 

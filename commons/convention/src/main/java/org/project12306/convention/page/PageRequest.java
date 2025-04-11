@@ -15,17 +15,26 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service.handler.filter.user;
+package org.project12306.convention.page;
 
+import lombok.Data;
 
-import org.project12306.commons.desingnpattern.chain.AbstractChainHandler;
-import org.project12306.services.userservice.common.enums.UserChainMarkEnum;
-import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
+/**
+ * 分页请求对象
+ *
+ * <p> {@link PageRequest}、{@link PageResponse}
+ * 可以理解是防腐层的一种实现，不论底层 ORM 框架，对外分页参数属性不变
+ */
+@Data
+public class PageRequest {
 
-public interface UserRegisterCreateChainFilter<T extends UserRegisterReqDTO> extends AbstractChainHandler<UserRegisterReqDTO> {
+    /**
+     * 当前页
+     */
+    private Long current = 1L;
 
-    @Override
-    default String mark() {
-        return UserChainMarkEnum.USER_REGISTER_FILTER.name();
-    }
+    /**
+     * 每页显示条数
+     */
+    private Long size = 10L;
 }

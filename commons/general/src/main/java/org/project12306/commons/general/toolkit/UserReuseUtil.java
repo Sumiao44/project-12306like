@@ -1,6 +1,6 @@
-package org.project12306.general.toolkit;
+package org.project12306.commons.general.toolkit;
 
-import static org.project12306.general.constant.Index12306Constant.USER_REGISTER_REUSE_SHARDING_COUNT;
+import static org.project12306.commons.general.constant.Index12306Constant.USER_REGISTER_REUSE_SHARDING_COUNT;
 
 /**
  * 用户名可复用工具类

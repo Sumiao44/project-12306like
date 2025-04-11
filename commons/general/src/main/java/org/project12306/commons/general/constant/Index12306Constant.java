@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.service.handler.filter.user;
+package org.project12306.commons.general.constant;
 
+/**
+ * 系统级公共常量
+ */
+public final class Index12306Constant {
 
-import org.project12306.commons.desingnpattern.chain.AbstractChainHandler;
-import org.project12306.services.userservice.common.enums.UserChainMarkEnum;
-import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
-
-public interface UserRegisterCreateChainFilter<T extends UserRegisterReqDTO> extends AbstractChainHandler<UserRegisterReqDTO> {
-
-    @Override
-    default String mark() {
-        return UserChainMarkEnum.USER_REGISTER_FILTER.name();
-    }
+    /**
+     * 用户注册可复用用户名分片数
+     */
+    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
 }

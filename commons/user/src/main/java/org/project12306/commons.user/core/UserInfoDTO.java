@@ -15,15 +15,39 @@
  * limitations under the License.
  */
 
-package org.project12306.general.constant;
+package org.project12306.commons.user.core;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * 系统级公共常量
+ * 用户信息实体
  */
-public final class Index12306Constant {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserInfoDTO {
 
     /**
-     * 用户注册可复用用户名分片数
+     * 用户 ID
      */
-    public static final int USER_REGISTER_REUSE_SHARDING_COUNT = 1024;
+    private String userId;
+
+    /**
+     * 用户名
+     */
+    private String username;
+
+    /**
+     * 真实姓名
+     */
+    private String realName;
+
+    /**
+     * 用户 Token
+     */
+    private String token;
 }

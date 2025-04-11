@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.project12306.general.toolkit;
+package org.project12306.commons.general.toolkit;
 
 import com.github.dozermapper.core.DozerBeanMapperBuilder;
 import com.github.dozermapper.core.Mapper;

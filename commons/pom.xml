@@ -21,6 +21,7 @@
         <module>database</module>
         <module>general</module>
         <module>cache</module>
+        <module>user</module>
     </modules>
 
     <properties>
