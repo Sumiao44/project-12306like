@@ -41,7 +41,7 @@ framework:
       bloom-filter:
         user-register:
           name: user_register_cache_penetration_bloom_filter${unique-name:}
-
+#开放用于监控的端口
 management:
   endpoints:
     web:
