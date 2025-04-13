@@ -15,50 +15,33 @@
  * limitations under the License.
  */
 
-package org.project12306.cache;
+package org.project12306.commons.cache.config;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-import java.util.Collection;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * 缓存接口
+ * 缓存穿透布隆过滤器
  */
-public interface Cache {
+@Data
+@ConfigurationProperties(prefix = BloomFilterPenetrateProperties.PREFIX)
+public class BloomFilterPenetrateProperties {
+
+    public static final String PREFIX = "framework.cache.redis.bloom-filter.default";
 
     /**
-     * 获取缓存
+     * 布隆过滤器默认实例名称
+     * 缓存穿透布隆过滤器
      */
-    <T> T get(@NotBlank String key, Class<T> clazz);
+    private String name = "cache_penetration_bloom_filter";
 
     /**
-     * 放入缓存
+     * 每个元素的预期插入量
      */
-    void put(@NotBlank String key, Object value);
+    private Long expectedInsertions = 64L;
 
     /**
-     * 如果 keys 全部不存在，则新增，返回 true，反之 false
+     * 设定预期错误概率
      */
-    Boolean putIfAllAbsent(@NotNull Collection<String> keys);
-
-    /**
-     * 删除缓存
-     */
-    Boolean delete(@NotBlank String key);
-
-    /**
-     * 删除 keys，返回删除数量
-     */
-    Long delete(@NotNull Collection<String> keys);
-
-    /**
-     * 判断 key 是否存在
-     */
-    Boolean hasKey(@NotBlank String key);
-
-    /**
-     * 获取缓存组件实例
-     */
-    Object getInstance();
+    private Double falseProbability = 0.03D;
 }

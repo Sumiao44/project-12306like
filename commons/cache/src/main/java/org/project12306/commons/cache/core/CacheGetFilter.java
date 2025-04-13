@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package org.project12306.cache.core;
+package org.project12306.commons.cache.core;
 
 /**
- * 缓存加载器
+ * 缓存过滤
  */
 @FunctionalInterface
-public interface CacheLoader<T> {
+public interface CacheGetFilter<T> {
 
     /**
-     * 加载缓存
+     * 缓存过滤
+     *
+     * @param param 输出参数
+     * @return {@code true} 如果输入参数匹配，否则 {@link Boolean#TRUE}
      */
-    T load();
+    boolean filter(T param);
 }

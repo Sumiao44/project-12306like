@@ -21,7 +21,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.project12306.cache.DistributedCache;
+import org.project12306.commons.cache.DistributedCache;
 import org.project12306.commons.desingnpattern.chain.AbstractChainContext;
 import org.project12306.convention.exception.ServiceException;
 import org.project12306.services.userservice.common.enums.UserChainMarkEnum;

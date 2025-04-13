@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package org.project12306.cache.core;
+package org.project12306.commons.cache.core;
 
 /**
- * 缓存查询为空
- * 公众号：马丁玩编程，回复：加群，添加马哥微信（备注：12306）获取项目资料
+ * 缓存加载器
+ * 加载将要被缓存到缓存中的内容
  */
 @FunctionalInterface
-public interface CacheGetIfAbsent<T> {
+public interface CacheLoader<T> {
 
     /**
-     * 如果查询结果为空，执行逻辑
+     * 加载缓存
      */
-    void execute(T param);
+    T load();
 }

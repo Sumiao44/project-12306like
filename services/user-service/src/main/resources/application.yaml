@@ -4,13 +4,13 @@ server:
 
 spring:
   application:
-    name: index12306-user${unique-name:}-service
+    name: org.project1306${unique-name:}-service
   datasource:
     driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
     url: jdbc:shardingsphere:classpath:shardingsphere-config.yaml
   data:
     redis:
-      host: 127.0.0.1
+      host: 192.168.153.135
       port: 6379
       password: 123456
   cloud:

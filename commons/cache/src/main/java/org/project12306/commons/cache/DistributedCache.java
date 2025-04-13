@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.project12306.cache;
+package org.project12306.commons.cache;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
-import org.project12306.cache.core.CacheGetFilter;
-import org.project12306.cache.core.CacheGetIfAbsent;
-import org.project12306.cache.core.CacheLoader;
+import org.project12306.commons.cache.core.CacheGetFilter;
+import org.project12306.commons.cache.core.CacheGetIfAbsent;
+import org.project12306.commons.cache.core.CacheLoader;
 import org.redisson.api.RBloomFilter;
 
 import java.util.concurrent.TimeUnit;
