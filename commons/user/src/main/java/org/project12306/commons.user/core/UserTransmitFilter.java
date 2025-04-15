@@ -39,6 +39,7 @@ public class UserTransmitFilter implements Filter {
         if (StringUtils.hasText(userId)) {
             String userName = httpServletRequest.getHeader(UserConstant.USER_NAME_KEY);
             String realName = httpServletRequest.getHeader(UserConstant.REAL_NAME_KEY);
+            //从请求头中获取后使用utf8解码
             if (StringUtils.hasText(userName)) {
                 userName = URLDecoder.decode(userName, UTF_8);
             }

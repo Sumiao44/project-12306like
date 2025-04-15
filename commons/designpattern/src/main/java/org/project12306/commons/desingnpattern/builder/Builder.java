@@ -15,10 +15,19 @@
  * limitations under the License.
  */
 
-package org.project12306.commons.cache;
+package org.project12306.commons.desingnpattern.builder;
+
+import java.io.Serializable;
 
 /**
- * 多级缓存
+ * Builder
  */
-public interface MultistageCache extends Cache {
+public interface Builder<T> extends Serializable {
+
+    /**
+     * 构建方法
+     *
+     * @return 构建后的对象
+     */
+    T build();
 }
