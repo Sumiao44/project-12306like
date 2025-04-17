@@ -4,7 +4,7 @@ server:
 
 spring:
   application:
-    name: org.project1306${unique-name:}-service
+    name: project1306-user${unique-name:}-service
   datasource:
     driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
     url: jdbc:shardingsphere:classpath:shardingsphere-config.yaml

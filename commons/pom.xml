@@ -22,6 +22,7 @@
         <module>general</module>
         <module>cache</module>
         <module>user</module>
+        <module>common</module>
     </modules>
 
     <properties>
