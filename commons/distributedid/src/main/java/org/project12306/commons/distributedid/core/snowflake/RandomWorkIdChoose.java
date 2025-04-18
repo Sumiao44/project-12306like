@@ -15,42 +15,30 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.dao.entity;
+package org.project12306.commons.distributedid.core.snowflake;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.project12306.commons.database.base.BaseDO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
- * 用户手机号实体对象
+ * 使用随机数获取雪花 WorkId
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@TableName("t_user_phone")
-public class UserPhoneDO extends BaseDO {
+@Slf4j
+public class RandomWorkIdChoose extends AbstractWorkIdChooseTemplate implements InitializingBean {
 
-    /**
-     * id
-     */
-    private Long id;
+    @Override
+    protected WorkIdWrapper chooseWorkId() {
+        int start = 0, end = 31;
+        return new WorkIdWrapper(getRandom(start, end), getRandom(start, end));
+    }
 
-    /**
-     * 用户名
-     */
-    private String username;
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        chooseAndInit();
+    }
 
-    /**
-     * 手机号
-     */
-    private String phone;
-
-    /**
-     * 注销时间戳
-     */
-    private Long deletionTime;
+    private static long getRandom(int start, int end) {
+        long random = (long) (Math.random() * (end - start + 1) + start);
+        return random;
+    }
 }

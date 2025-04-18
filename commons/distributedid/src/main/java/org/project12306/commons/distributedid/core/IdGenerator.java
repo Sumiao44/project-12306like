@@ -15,42 +15,24 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.dao.entity;
-
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.project12306.commons.database.base.BaseDO;
+package org.project12306.commons.distributedid.core;
 
 /**
- * 用户手机号实体对象
+ * ID 生成器
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@TableName("t_user_phone")
-public class UserPhoneDO extends BaseDO {
+public interface IdGenerator {
 
     /**
-     * id
+     * 下一个 ID
      */
-    private Long id;
+    default long nextId() {
+        return 0L;
+    }
 
     /**
-     * 用户名
+     * 下一个 ID 字符串
      */
-    private String username;
-
-    /**
-     * 手机号
-     */
-    private String phone;
-
-    /**
-     * 注销时间戳
-     */
-    private Long deletionTime;
+    default String nextIdStr() {
+        return "";
+    }
 }

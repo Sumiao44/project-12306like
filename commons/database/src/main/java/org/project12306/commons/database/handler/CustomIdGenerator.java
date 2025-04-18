@@ -15,35 +15,18 @@
  * limitations under the License.
  */
 
-package org.project12306.database.base;
+package org.project12306.commons.database.handler;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import lombok.Data;
-
-import java.util.Date;
+import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
+import org.project12306.commons.distributedid.toolkit.SnowflakeIdUtil;
 
 /**
- * 数据持久层基础属性
+ * 自定义雪花算法生成器
  */
-@Data
-public class BaseDO {
+public class CustomIdGenerator implements IdentifierGenerator {
 
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
-     * 删除标志
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Integer delFlag;
+    @Override
+    public Number nextId(Object entity) {
+        return SnowflakeIdUtil.nextId();
+    }
 }

@@ -15,42 +15,27 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.dao.entity;
+package org.project12306.commons.distributedid.core.snowflake;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.project12306.commons.database.base.BaseDO;
 
 /**
- * 用户手机号实体对象
+ * WorkId 包装器
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@TableName("t_user_phone")
-public class UserPhoneDO extends BaseDO {
+public class WorkIdWrapper {
 
     /**
-     * id
+     * 工作ID
      */
-    private Long id;
+    private Long workId;
 
     /**
-     * 用户名
+     * 数据中心ID
      */
-    private String username;
-
-    /**
-     * 手机号
-     */
-    private String phone;
-
-    /**
-     * 注销时间戳
-     */
-    private Long deletionTime;
+    private Long dataCenterId;
 }

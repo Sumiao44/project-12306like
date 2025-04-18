@@ -15,42 +15,36 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.dao.entity;
+package org.project12306.commons.database.base;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.project12306.commons.database.base.BaseDO;
+
+import java.util.Date;
 
 /**
- * 用户手机号实体对象
+ * 数据持久层基础属性
+ * 公共的都需要的基础属性
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@TableName("t_user_phone")
-public class UserPhoneDO extends BaseDO {
+public class BaseDO {
 
     /**
-     * id
+     * 创建时间
      */
-    private Long id;
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
 
     /**
-     * 用户名
+     * 修改时间
      */
-    private String username;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
 
     /**
-     * 手机号
+     * 删除标志
      */
-    private String phone;
-
-    /**
-     * 注销时间戳
-     */
-    private Long deletionTime;
+    @TableField(fill = FieldFill.INSERT)
+    private Integer delFlag;
 }

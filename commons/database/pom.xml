@@ -50,7 +50,12 @@
         </dependency>
         <dependency>
             <groupId>org.project12306</groupId>
-            <artifactId>commons</artifactId>
+            <artifactId>distributedid</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.project12306</groupId>
+            <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>

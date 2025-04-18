@@ -15,42 +15,44 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.dao.entity;
+package org.project12306.commons.distributedid.core.snowflake;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.project12306.commons.database.base.BaseDO;
 
 /**
- * 用户手机号实体对象
+ * 雪花算法组成部分，通常用来反解析使用
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@TableName("t_user_phone")
-public class UserPhoneDO extends BaseDO {
+public class SnowflakeIdInfo {
 
     /**
-     * id
+     * 时间戳
      */
-    private Long id;
+    private Long timestamp;
 
     /**
-     * 用户名
+     * 工作机器节点 ID
      */
-    private String username;
+    private Integer workerId;
 
     /**
-     * 手机号
+     * 数据中心 ID
      */
-    private String phone;
+    private Integer dataCenterId;
 
     /**
-     * 注销时间戳
+     * 自增序号，当高频模式下时，同一毫秒内生成 N 个 ID，则这个序号在同一毫秒下，自增以避免 ID 重复
      */
-    private Long deletionTime;
+    private Integer sequence;
+
+    /**
+     * 通过基因法生成的序号，会和 {@link SnowflakeIdInfo#sequence} 共占 12 bit
+     */
+    private Integer gene;
 }

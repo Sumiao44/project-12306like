@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.project12306.database.algorithm.sharding;
+package org.project12306.commons.database.algorithm.sharding;
 
 import org.apache.shardingsphere.infra.util.exception.ShardingSpherePreconditions;
 import org.apache.shardingsphere.sharding.algorithm.sharding.ShardingAutoTableAlgorithmUtil;

@@ -22,7 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.project12306.database.base.BaseDO;
+import org.project12306.commons.database.base.BaseDO;
 
 /**
  * 用户邮箱表实体对象

@@ -6,6 +6,7 @@
     <modules>
         <module>commons</module>
         <module>services</module>
+        <module>commons/distributedid</module>
     </modules>
 
     <parent>
