@@ -7,6 +7,7 @@
         <module>commons</module>
         <module>services</module>
         <module>commons/distributedid</module>
+        <module>commons/log</module>
     </modules>
 
     <parent>
