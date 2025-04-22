@@ -8,6 +8,7 @@
         <module>services</module>
         <module>commons/distributedid</module>
         <module>commons/log</module>
+        <module>commons/idempotent</module>
     </modules>
 
     <parent>
