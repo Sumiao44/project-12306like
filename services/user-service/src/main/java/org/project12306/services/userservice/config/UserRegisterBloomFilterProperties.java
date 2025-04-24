@@ -15,16 +15,32 @@
  * limitations under the License.
  */
 
-package org.project12306.convention.error;
+package org.project12306.services.userservice.config;
 
-public interface IErrorCode {
-    /**
-     * 错误码
-     */
-    String code();
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * 用户注册布隆过滤器属性配置
+ */
+@Data
+@ConfigurationProperties(prefix = UserRegisterBloomFilterProperties.PREFIX)
+public final class UserRegisterBloomFilterProperties {
+
+    public static final String PREFIX = "framework.cache.redis.bloom-filter.user-register";
 
     /**
-     * 错误信息
+     * 用户注册布隆过滤器实例名称
      */
-    String message();
+    private String name = "user_register_cache_penetration_bloom_filter";
+
+    /**
+     * 每个元素的预期插入量
+     */
+    private Long expectedInsertions = 64L;
+
+    /**
+     * 预期错误概率
+     */
+    private Double falseProbability = 0.03D;
 }

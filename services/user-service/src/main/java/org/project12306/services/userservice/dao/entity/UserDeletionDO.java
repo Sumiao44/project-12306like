@@ -15,16 +15,37 @@
  * limitations under the License.
  */
 
-package org.project12306.convention.error;
+package org.project12306.services.userservice.dao.entity;
 
-public interface IErrorCode {
-    /**
-     * 错误码
-     */
-    String code();
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.project12306.commons.database.base.BaseDO;
+
+/**
+ * 用户注销表实体
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@TableName("t_user_deletion")
+public class UserDeletionDO extends BaseDO {
 
     /**
-     * 错误信息
+     * id
      */
-    String message();
+    private Long id;
+
+    /**
+     * 证件类型
+     */
+    private Integer idType;
+
+    /**
+     * 证件号
+     */
+    private String idCard;
 }

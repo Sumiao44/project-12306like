@@ -14,15 +14,17 @@
     <name>commons</name>
     <url>http://maven.apache.org</url>
     <modules>
-        <module>designpattern</module>
         <module>base</module>
-        <module>convention</module>
-        <module>web</module>
-        <module>database</module>
-        <module>general</module>
         <module>cache</module>
-        <module>user</module>
         <module>common</module>
+        <module>convention</module>
+        <module>database</module>
+        <module>designpattern</module>
+        <module>distributedid</module>
+        <module>idempotent</module>
+        <module>log</module>
+        <module>user</module>
+        <module>web</module>
     </modules>
 
     <properties>

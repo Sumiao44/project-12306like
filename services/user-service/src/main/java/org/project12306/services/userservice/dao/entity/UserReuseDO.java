@@ -21,7 +21,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.project12306.commons.database.base.BaseDO;;
+import org.project12306.commons.database.base.BaseDO;
+
+;
 
 /**
  * 用户名复用表实体

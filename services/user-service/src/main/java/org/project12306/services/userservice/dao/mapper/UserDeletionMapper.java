@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-package org.project12306.convention.error;
+package org.project12306.services.userservice.dao.mapper;
 
-public interface IErrorCode {
-    /**
-     * 错误码
-     */
-    String code();
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.project12306.services.userservice.dao.entity.UserDeletionDO;
 
-    /**
-     * 错误信息
-     */
-    String message();
+/**
+ * 用户注销表持久层
+ */
+public interface UserDeletionMapper extends BaseMapper<UserDeletionDO> {
 }

@@ -63,28 +63,28 @@ rules:
           sharding-count: 32
           table-sharding-count: 16
           strategy: standard
-          algorithmClassName: org.project12306.database.algorithm.sharding.CustomDbHashModShardingAlgorithm
+          algorithmClassName: org.project12306.commons.database.algorithm.sharding.CustomDbHashModShardingAlgorithm
       passenger_database_hash_mod:
         type: CLASS_BASED
         props:
           sharding-count: 32
           table-sharding-count: 16
           strategy: standard
-          algorithmClassName: org.project12306.database.algorithm.sharding.CustomDbHashModShardingAlgorithm
+          algorithmClassName: org.project12306.commons.database.algorithm.sharding.CustomDbHashModShardingAlgorithm
       t_user_mail_database_hash_mod:
         type: CLASS_BASED
         props:
           sharding-count: 32
           table-sharding-count: 16
           strategy: standard
-          algorithmClassName: org.project12306.database.algorithm.sharding.sharding.CustomDbHashModShardingAlgorithm
+          algorithmClassName: org.project12306.commons.database.algorithm.sharding.CustomDbHashModShardingAlgorithm
       t_user_phone_database_hash_mod:
         type: CLASS_BASED
         props:
           sharding-count: 32
           table-sharding-count: 16
           strategy: standard
-          algorithmClassName: org.project12306.database.algorithm.sharding.CustomDbHashModShardingAlgorithm
+          algorithmClassName: org.project12306.commons.database.algorithm.sharding.CustomDbHashModShardingAlgorithm
       passenger_table_hash_mod:
         type: HASH_MOD
         props:

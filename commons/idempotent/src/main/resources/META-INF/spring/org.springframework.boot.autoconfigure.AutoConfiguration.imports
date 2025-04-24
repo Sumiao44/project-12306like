@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-org.project12306.commons    .idempotent.config.IdempotentAutoConfiguration
+org.project12306.commons.idempotent.config.IdempotentAutoConfiguration

@@ -20,7 +20,7 @@ package org.project12306.services.userservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.project12306.web.Results;
+import org.project12306.commons.web.Results;
 import org.project12306.convention.result.Result;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.project12306.services.userservice.dto.resp.UserRegisterRespDTO;

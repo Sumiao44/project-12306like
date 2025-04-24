@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.project12306.commons.general.constant;
+package org.project12306.services.userservice.common.constant;
 
 /**
  * 系统级公共常量

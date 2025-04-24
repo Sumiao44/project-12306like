@@ -19,7 +19,7 @@ package org.project12306.commons.idempotent.core.token;
 
 import lombok.RequiredArgsConstructor;
 import org.project12306.convention.result.Result;
-import org.project12306.web.Results;
+import org.project12306.commons.web.Results;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

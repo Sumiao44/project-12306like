@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.project12306.web;
+package org.project12306.commons.web;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;

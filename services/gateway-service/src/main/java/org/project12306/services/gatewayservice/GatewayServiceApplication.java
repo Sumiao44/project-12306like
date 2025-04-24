@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package org.project12306.convention.error;
+package org.project12306.services.gatewayservice;
 
-public interface IErrorCode {
-    /**
-     * 错误码
-     */
-    String code();
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-    /**
-     * 错误信息
-     */
-    String message();
+/**
+ * 网关服务应用启动器
+ */
+@SpringBootApplication
+public class GatewayServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(GatewayServiceApplication.class, args);
+    }
 }
