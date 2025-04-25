@@ -20,8 +20,13 @@ package org.project12306.services.userservice.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
+import org.project12306.commons.common.toolkit.BeanUtil;
+import org.project12306.convention.exception.ClientException;
+import org.project12306.services.userservice.dao.entity.UserDO;
 import org.project12306.services.userservice.dao.entity.UserDeletionDO;
 import org.project12306.services.userservice.dao.mapper.UserDeletionMapper;
+import org.project12306.services.userservice.dao.mapper.UserMapper;
+import org.project12306.services.userservice.dto.resp.UserQueryRespDTO;
 import org.project12306.services.userservice.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +39,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final UserMapper userMapper;
     private final UserDeletionMapper userDeletionMapper;
     @Override
     public Integer queryUserDeletionNum(Integer idType, String idCard) {
@@ -45,4 +51,15 @@ public class UserServiceImpl implements UserService {
         return Optional.ofNullable(deletionCount).map(Long::intValue).orElse(0);
     }
 
+    @Override
+    public UserQueryRespDTO queryUserByUsername(String username) {
+        //对数据进行了脱敏展示
+        LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
+                .eq(UserDO::getUsername, username);
+        UserDO userDO = userMapper.selectOne(queryWrapper);
+        if (userDO == null) {
+            throw new ClientException("用户不存在，请检查用户名是否正确");
+        }
+        return BeanUtil.convert(userDO, UserQueryRespDTO.class);
+    }
 }

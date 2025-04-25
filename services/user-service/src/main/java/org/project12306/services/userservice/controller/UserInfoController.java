@@ -19,16 +19,16 @@ package org.project12306.services.userservice.controller;
 
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.project12306.commons.web.Results;
 import org.project12306.convention.result.Result;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
+import org.project12306.services.userservice.dto.resp.UserQueryRespDTO;
 import org.project12306.services.userservice.dto.resp.UserRegisterRespDTO;
 import org.project12306.services.userservice.service.UserLoginService;
 import org.project12306.services.userservice.service.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 用户控制层
@@ -40,7 +40,13 @@ public class UserInfoController {
     private final UserLoginService userLoginService;
     private final UserService userService;
 
-
+    /**
+     * 根据用户名查询用户信息
+     */
+    @GetMapping("/api/user-service/query")
+    public Result<UserQueryRespDTO> queryUserByUsername(@RequestParam("username") @NotEmpty String username) {
+        return Results.success(userService.queryUserByUsername(username));
+    }
 
     /**
      * 注册用户
