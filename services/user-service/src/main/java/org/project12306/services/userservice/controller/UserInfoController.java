@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.project12306.commons.web.Results;
 import org.project12306.convention.result.Result;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
+import org.project12306.services.userservice.dto.req.UserUpdateReqDTO;
+import org.project12306.services.userservice.dto.resp.UserQueryActualRespDTO;
 import org.project12306.services.userservice.dto.resp.UserQueryRespDTO;
 import org.project12306.services.userservice.dto.resp.UserRegisterRespDTO;
 import org.project12306.services.userservice.service.UserLoginService;
@@ -46,6 +48,31 @@ public class UserInfoController {
     @GetMapping("/api/user-service/query")
     public Result<UserQueryRespDTO> queryUserByUsername(@RequestParam("username") @NotEmpty String username) {
         return Results.success(userService.queryUserByUsername(username));
+    }
+
+    /**
+     * 根据用户名查询用户无脱敏信息
+     */
+    @GetMapping("/api/user-service/actual/query")
+    public Result<UserQueryActualRespDTO> queryActualUserByUsername(@RequestParam("username") @NotEmpty String username) {
+        return Results.success(userService.queryActualUserByUsername(username));
+    }
+
+    /**
+     * 检查用户名是否已存在
+     */
+    @GetMapping("/api/user-service/has-username")
+    public Result<Boolean> hasUsername(@RequestParam("username") @NotEmpty String username) {
+        return Results.success(userLoginService.hasUsername(username));
+    }
+
+    /**
+     * 修改用户
+     */
+    @PostMapping("/api/user-service/update")
+    public Result<Void> update(@RequestBody @Valid UserUpdateReqDTO requestParam) {
+        userService.update(requestParam);
+        return Results.success();
     }
 
     /**
