@@ -18,13 +18,22 @@
 package org.project12306.services.userservice.service;
 
 
+import org.project12306.services.userservice.dto.req.UserLoginReqDTO;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
+import org.project12306.services.userservice.dto.resp.UserLoginRespDTO;
 import org.project12306.services.userservice.dto.resp.UserRegisterRespDTO;
 
 /**
  * 用户登录接口
  */
 public interface UserLoginService {
+    /**
+     * 用户登录接口
+     *
+     * @param requestParam 用户登录入参
+     * @return 用户登录返回结果
+     */
+    UserLoginRespDTO login(UserLoginReqDTO requestParam);
 
     /**
      * 用户注册
