@@ -82,7 +82,11 @@ public class PassengerServiceImpl implements PassengerService {
     //跟插入的代码几乎完全一致（
     @Override
     public void updatePassenger(PassengerReqDTO requestParam) {
-        verifyPassenger(requestParam);
+        //因为乘车人信息只允许修改手机号 所以这里直接验证手机号就行
+        if (!PhoneUtil.isMobile(requestParam.getPhone())) {
+            throw new ClientException("乘车人手机号错误");
+        }
+
         String username = UserContext.getUsername();
         try {
             PassengerDO passengerDO = BeanUtil.convert(requestParam, PassengerDO.class);
