@@ -23,6 +23,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.project12306.commons.web.Results;
 import org.project12306.convention.result.Result;
+import org.project12306.services.userservice.dto.req.UserDeletionReqDTO;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.project12306.services.userservice.dto.req.UserUpdateReqDTO;
 import org.project12306.services.userservice.dto.resp.UserQueryActualRespDTO;
@@ -81,5 +82,14 @@ public class UserInfoController {
     @PostMapping("/api/user-service/register")
     public Result<UserRegisterRespDTO> register(@RequestBody @Valid UserRegisterReqDTO requestParam) {
         return Results.success(userLoginService.register(requestParam));
+    }
+
+    /**
+     * 注销用户
+     */
+    @PostMapping("/api/user-service/deletion")
+    public Result<Void> deletion(@RequestBody @Valid UserDeletionReqDTO requestParam) {
+        userLoginService.deletion(requestParam);
+        return Results.success();
     }
 }

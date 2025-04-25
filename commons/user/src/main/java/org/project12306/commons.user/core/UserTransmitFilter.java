@@ -19,6 +19,7 @@ package org.project12306.commons.user.core;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.project12306.commons.base.constant.UserConstant;
 import org.springframework.util.StringUtils;
 

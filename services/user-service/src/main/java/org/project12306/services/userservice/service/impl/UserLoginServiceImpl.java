@@ -27,22 +27,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.project12306.commons.cache.DistributedCache;
 import org.project12306.commons.common.toolkit.BeanUtil;
 import org.project12306.commons.desingnpattern.chain.AbstractChainContext;
+import org.project12306.commons.user.core.UserContext;
 import org.project12306.commons.user.core.UserInfoDTO;
 import org.project12306.commons.user.toolkit.JWTUtil;
 import org.project12306.convention.exception.ClientException;
 import org.project12306.convention.exception.ServiceException;
 import org.project12306.services.userservice.common.enums.UserChainMarkEnum;
-import org.project12306.services.userservice.dao.entity.UserDO;
-import org.project12306.services.userservice.dao.entity.UserMailDO;
-import org.project12306.services.userservice.dao.entity.UserPhoneDO;
-import org.project12306.services.userservice.dao.entity.UserReuseDO;
-import org.project12306.services.userservice.dao.mapper.UserMailMapper;
-import org.project12306.services.userservice.dao.mapper.UserMapper;
-import org.project12306.services.userservice.dao.mapper.UserPhoneMapper;
-import org.project12306.services.userservice.dao.mapper.UserReuseMapper;
+import org.project12306.services.userservice.dao.entity.*;
+import org.project12306.services.userservice.dao.mapper.*;
+import org.project12306.services.userservice.dto.req.UserDeletionReqDTO;
 import org.project12306.services.userservice.dto.req.UserLoginReqDTO;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.project12306.services.userservice.dto.resp.UserLoginRespDTO;
+import org.project12306.services.userservice.dto.resp.UserQueryRespDTO;
 import org.project12306.services.userservice.dto.resp.UserRegisterRespDTO;
 import org.project12306.services.userservice.service.UserLoginService;
 import org.project12306.services.userservice.service.UserService;
@@ -54,11 +51,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static org.project12306.services.userservice.common.constant.RedisKeyConstant.LOCK_USER_REGISTER;
-import static org.project12306.services.userservice.common.constant.RedisKeyConstant.USER_REGISTER_REUSE_SHARDING;
+import static org.project12306.services.userservice.common.constant.RedisKeyConstant.*;
 import static org.project12306.services.userservice.common.enums.UserRegisterErrorCodeEnum.*;
 import static org.project12306.services.userservice.toolkit.UserReuseUtil.hashShardingIdx;
 
@@ -75,6 +72,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 //    private final UserDeletionMapper userDeletionMapper;
     private final UserPhoneMapper userPhoneMapper;
     private final UserMailMapper userMailMapper;
+    private final UserDeletionMapper userDeletionMapper;
     private final RedissonClient redissonClient;
     private final DistributedCache distributedCache;
     private final AbstractChainContext<UserRegisterReqDTO> abstractChainContext;
@@ -127,7 +125,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             String accessToken = JWTUtil.generateAccessToken(userInfo);
             //这里的信息设计的用意在于，你使用什么信息登陆的我就返回什么信息
             UserLoginRespDTO actual = new UserLoginRespDTO(userInfo.getUserId(), requestParam.getUsernameOrMailOrPhone(), userDO.getRealName(), accessToken);
-            //放到缓存里，信息放30分钟
+            //登录后放到缓存里，信息放30分钟
             distributedCache.put(accessToken, JSON.toJSONString(actual), 30, TimeUnit.MINUTES);
             return actual;
         }
@@ -182,6 +180,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             String username = requestParam.getUsername();
             userReuseMapper.delete(Wrappers.update(new UserReuseDO(username)));
             StringRedisTemplate instance = (StringRedisTemplate) distributedCache.getInstance();
+            //解放在责任链校验中为了保证不发生并发用户注册问题的键
             instance.opsForSet().remove(USER_REGISTER_REUSE_SHARDING + hashShardingIdx(username), username);
 
             //将用户名加入布隆过滤器中 避免缓存穿透
@@ -202,5 +201,64 @@ public class UserLoginServiceImpl implements UserLoginService {
         return true;
     }
 
+    @Override
+    public UserLoginRespDTO checkLogin(String accessToken) {
+        //因为上面存的时候也是用userLogin存的，所以这里也用这个类去解析token
+        //从缓存中获取数据
+        return distributedCache.get(accessToken, UserLoginRespDTO.class);
+    }
 
+    @Override
+    public void logout(String accessToken) {
+        if (StrUtil.isNotBlank(accessToken)) {
+            distributedCache.delete(accessToken);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deletion(UserDeletionReqDTO requestParam) {
+        String username = UserContext.getUsername();
+        if (!Objects.equals(username, requestParam.getUsername())) {
+            throw new ClientException("注销账号与登录账号不一致");
+        }
+        RLock lock = redissonClient.getLock(USER_DELETION + requestParam.getUsername());
+        lock.lock();
+        try {
+            //将注销的用户信息存入注销用户表
+            //将对应用户信息的delFlag进行变更
+            UserQueryRespDTO userQueryRespDTO = userService.queryUserByUsername(username);
+            UserDeletionDO userDeletionDO = UserDeletionDO.builder()
+                    .idType(userQueryRespDTO.getIdType())
+                    .idCard(userQueryRespDTO.getIdCard())
+                    .build();
+            userDeletionMapper.insert(userDeletionDO);
+            UserDO userDO = new UserDO();
+            userDO.setDeletionTime(System.currentTimeMillis());
+            userDO.setUsername(username);
+            // MyBatis Plus 不支持修改语句变更 del_flag 字段
+            //用户表也要进行删除 也就是更改字段
+            userMapper.deletionUser(userDO);
+            UserPhoneDO userPhoneDO = UserPhoneDO.builder()
+                    .phone(userQueryRespDTO.getPhone())
+                    .deletionTime(System.currentTimeMillis())
+                    .build();
+            userPhoneMapper.deletionUser(userPhoneDO);
+
+            //如果邮箱不为空也要对邮箱表进行删除
+            if (StrUtil.isNotBlank(userQueryRespDTO.getMail())) {
+                UserMailDO userMailDO = UserMailDO.builder()
+                        .mail(userQueryRespDTO.getMail())
+                        .deletionTime(System.currentTimeMillis())
+                        .build();
+                userMailMapper.deletionUser(userMailDO);
+            }
+            distributedCache.delete(UserContext.getToken());
+            userReuseMapper.insert(new UserReuseDO(username));
+            StringRedisTemplate instance = (StringRedisTemplate) distributedCache.getInstance();
+            instance.opsForSet().add(USER_REGISTER_REUSE_SHARDING + hashShardingIdx(username), username);
+        } finally {
+            lock.unlock();
+        }
+    }
 }

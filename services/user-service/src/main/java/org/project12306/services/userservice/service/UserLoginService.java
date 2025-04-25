@@ -18,6 +18,7 @@
 package org.project12306.services.userservice.service;
 
 
+import org.project12306.services.userservice.dto.req.UserDeletionReqDTO;
 import org.project12306.services.userservice.dto.req.UserLoginReqDTO;
 import org.project12306.services.userservice.dto.req.UserRegisterReqDTO;
 import org.project12306.services.userservice.dto.resp.UserLoginRespDTO;
@@ -50,4 +51,26 @@ public interface UserLoginService {
      * @return 用户名是否存在返回结果
      */
     Boolean hasUsername(String username);
+
+    /**
+     * 通过 Token 检查用户是否登录
+     *
+     * @param accessToken 用户登录 Token 凭证
+     * @return 用户是否登录返回结果
+     */
+    UserLoginRespDTO checkLogin(String accessToken);
+
+    /**
+     * 用户退出登录
+     *
+     * @param accessToken 用户登录 Token 凭证
+     */
+    void logout(String accessToken);
+
+    /**
+     * 注销用户
+     *
+     * @param requestParam 注销用户入参
+     */
+    void deletion(UserDeletionReqDTO requestParam);
 }

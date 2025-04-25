@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService {
                 .eq(UserDeletionDO::getIdCard, idCard);
         // TODO 此处应该先查缓存
         Long deletionCount = userDeletionMapper.selectCount(queryWrapper);
+        //得到对应证件号的账号注销次数
         return Optional.ofNullable(deletionCount).map(Long::intValue).orElse(0);
     }
 

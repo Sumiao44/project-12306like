@@ -15,34 +15,18 @@
  * limitations under the License.
  */
 
-package org.project12306.services.gatewayservice.toolkit;
+package org.project12306.services.userservice.dto.req;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
- * 用户信息实体
+ * 用户注销请求参数
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UserInfoDTO {
-
-    /**
-     * 用户 ID
-     */
-    private String userId;
+public class UserDeletionReqDTO {
 
     /**
      * 用户名
      */
     private String username;
-
-    /**
-     * 真实姓名
-     */
-    private String realName;
 }
