@@ -37,5 +37,24 @@ public interface PassengerService {
      */
     List<PassengerRespDTO> listPassengerQueryByUsername(String username);
 
+    /**
+     * 新增乘车人
+     *
+     * @param requestParam 乘车人信息
+     */
+    void savePassenger(PassengerReqDTO requestParam);
 
+    /**
+     * 修改乘车人
+     *
+     * @param requestParam 乘车人信息
+     */
+    void updatePassenger(PassengerReqDTO requestParam);
+
+    /**
+     * 移除乘车人
+     *
+     * @param requestParam 移除乘车人信息
+     */
+    void removePassenger(PassengerRemoveReqDTO requestParam);
 }
