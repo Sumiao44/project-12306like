@@ -15,30 +15,27 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.dto.domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * Redis Key 定义常量类
+ * 座位类型和座位数量实体
  */
-public final class RedisKeyConstant {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SeatTypeCountDTO {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * 座位类型
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    private Integer seatType;
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 座位类型 - 对应数量
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
-
-    /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
-     */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
-
-    /**
-     * 用户乘车人列表，Key Prefix + 用户名
-     */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    private Integer seatCount;
 }

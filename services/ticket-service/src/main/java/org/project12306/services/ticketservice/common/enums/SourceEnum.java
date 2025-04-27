@@ -15,30 +15,27 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.common.enums;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Redis Key 定义常量类
+ * 购票来源
  */
-public final class RedisKeyConstant {
+@RequiredArgsConstructor
+public enum SourceEnum {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * 互联网购票
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    INTERNET(0),
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 线下窗口购票
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
+    OFFLINE(1);
 
-    /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
-     */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
-
-    /**
-     * 用户乘车人列表，Key Prefix + 用户名
-     */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    @Getter
+    private final Integer code;
 }

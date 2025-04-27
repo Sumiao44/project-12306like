@@ -44,7 +44,7 @@ public class ApplicationBaseAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(value = "framework.fastjson.safa-mode", havingValue = "true")
+    @ConditionalOnProperty(value = "common.fastjson.safa-mode", havingValue = "true")
     public FastJsonSafeMode congoFastJsonSafeMode() {
         return new FastJsonSafeMode();
     }

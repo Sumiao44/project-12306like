@@ -15,30 +15,41 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.dto.domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 /**
- * Redis Key 定义常量类
+ * 席别类型实体
  */
-public final class RedisKeyConstant {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SeatClassDTO {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * 席别类型
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    private Integer type;
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 席别数量
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
+    private Integer quantity;
 
     /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
+     * 席别价格
      */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
+    private BigDecimal price;
 
     /**
-     * 用户乘车人列表，Key Prefix + 用户名
+     * 席别候补标识
      */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    private Boolean candidate;
 }

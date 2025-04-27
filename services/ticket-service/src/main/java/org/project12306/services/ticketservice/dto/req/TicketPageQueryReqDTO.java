@@ -15,30 +15,43 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.dto.req;
+
+import lombok.Data;
+import org.project12306.convention.page.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
- * Redis Key 定义常量类
+ * 车票分页查询请求参数
  */
-public final class RedisKeyConstant {
+@Data
+public class TicketPageQueryReqDTO extends PageRequest {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * 出发地 Code
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    private String fromStation;
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 目的地 Code
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
+    private String toStation;
 
     /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
+     * 出发日期
      */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date departureDate;
 
     /**
-     * 用户乘车人列表，Key Prefix + 用户名
+     * 出发站点
      */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    private String departure;
+
+    /**
+     * 到达站点
+     */
+    private String arrival;
 }

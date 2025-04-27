@@ -15,30 +15,33 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.common.enums;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Redis Key 定义常量类
+ * 退款类型枚举
  */
-public final class RedisKeyConstant {
+@Getter
+@RequiredArgsConstructor
+public enum RefundTypeEnum {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * 部分退款
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    PARTIAL_REFUND(11, 0, "PARTIAL_REFUND", "部分退款"),
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 全部退款
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
+    FULL_REFUND(12, 1, "FULL_REFUND", "全部退款");
 
-    /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
-     */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
+    private final Integer code;
 
-    /**
-     * 用户乘车人列表，Key Prefix + 用户名
-     */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    private final Integer type;
+
+    private final String name;
+
+    private final String value;
 }

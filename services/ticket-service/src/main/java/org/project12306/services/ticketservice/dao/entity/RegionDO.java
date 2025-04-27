@@ -15,30 +15,51 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.dao.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import org.project12306.commons.database.base.BaseDO;
 
 /**
- * Redis Key 定义常量类
+ * 地区表
  */
-public final class RedisKeyConstant {
+@Data
+@TableName("t_region")
+public class RegionDO extends BaseDO {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * id
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    private Long id;
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 地区名称
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
+    private String name;
 
     /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
+     * 地区全名
      */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
+    private String fullName;
 
     /**
-     * 用户乘车人列表，Key Prefix + 用户名
+     * 地区编码
      */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    private String code;
+
+    /**
+     * 地区首字母
+     */
+    private String initial;
+
+    /**
+     * 拼音
+     */
+    private String spell;
+
+    /**
+     * 热门标识
+     */
+    private Integer popularFlag;
 }

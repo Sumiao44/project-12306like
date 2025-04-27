@@ -32,7 +32,7 @@ public class AbstractChainContext<T> implements CommandLineRunner {
     /**
      * 执行责任链组件
      * @param mark 标识
-     * @param requestParam 请求参数
+     * @param requestParam 用于给责任链执行的请求参数
      */
     public void handler(String mark, T requestParam) {
         List<AbstractChainHandler> abstractChainHandlers = abstractChainHandlerContainer.get(mark);

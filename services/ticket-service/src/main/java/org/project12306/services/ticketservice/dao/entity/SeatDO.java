@@ -15,33 +15,67 @@
  * limitations under the License.
  */
 
-package org.project12306.services.ticketservice.dto.resp;
+package org.project12306.services.ticketservice.dao.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.project12306.commons.database.base.BaseDO;
 
 /**
- * 站点分页查询响应参数
+ * 座位实体
  */
 @Data
-public class StationQueryRespDTO {
+@TableName("t_seat")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SeatDO extends BaseDO {
 
     /**
-     * 名称
+     * id
      */
-    private String name;
+    private Long id;
 
     /**
-     * 地区编码
+     * 列车id
      */
-    private String code;
+    private Long trainId;
 
     /**
-     * 拼音
+     * 车厢号
      */
-    private String spell;
+    private String carriageNumber;
 
     /**
-     * 城市名称
+     * 座位号
      */
-    private String regionName;
+    private String seatNumber;
+
+    /**
+     * 座位类型
+     */
+    private Integer seatType;
+
+    /**
+     * 起始站
+     */
+    private String startStation;
+
+    /**
+     * 终点站
+     */
+    private String endStation;
+
+    /**
+     * 座位状态
+     */
+    private Integer seatStatus;
+
+    /**
+     * 车票价格
+     */
+    private Integer price;
 }

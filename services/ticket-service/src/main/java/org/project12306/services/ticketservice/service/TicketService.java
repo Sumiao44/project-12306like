@@ -15,30 +15,26 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.project12306.services.ticketservice.dao.entity.TicketDO;
+import org.project12306.services.ticketservice.dto.req.TicketPageQueryReqDTO;
+import org.project12306.services.ticketservice.dto.resp.TicketPageQueryRespDTO;
 
 /**
- * Redis Key 定义常量类
+ * 车票接口
  */
-public final class RedisKeyConstant {
+public interface TicketService extends IService<TicketDO> {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * 根据条件分页查询车票V2高性能版本
+     *
+     * @param requestParam 分页查询车票请求参数
+     * @return 查询车票返回结果
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    TicketPageQueryRespDTO pageListTicketQueryV2(TicketPageQueryReqDTO requestParam);
+    TicketPageQueryRespDTO pageListTicketQueryV1(TicketPageQueryReqDTO requestParam);
 
-    /**
-     * 用户注销锁，Key Prefix + 用户名
-     */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
 
-    /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
-     */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
-
-    /**
-     * 用户乘车人列表，Key Prefix + 用户名
-     */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
 }

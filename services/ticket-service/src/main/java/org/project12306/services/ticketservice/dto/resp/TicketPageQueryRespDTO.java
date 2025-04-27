@@ -15,30 +15,47 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.dto.resp;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.project12306.services.ticketservice.dto.domain.TicketListDTO;
+
+import java.util.List;
 
 /**
- * Redis Key 定义常量类
+ * 车票分页查询响应参数
  */
-public final class RedisKeyConstant {
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class TicketPageQueryRespDTO {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * 车次集合数据
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    private List<TicketListDTO> trainList;
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 车次类型：D-动车 Z-直达 复兴号等
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
+    private List<Integer> trainBrandList;
 
     /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
+     * 出发车站
      */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
+    private List<String> departureStationList;
 
     /**
-     * 用户乘车人列表，Key Prefix + 用户名
+     * 到达车站
      */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    private List<String> arrivalStationList;
+
+    /**
+     * 车次席别
+     */
+    private List<Integer> seatClassTypeList;
 }

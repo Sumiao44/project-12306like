@@ -15,30 +15,13 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.dao.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.project12306.services.ticketservice.dao.entity.TrainStationPriceDO;
 
 /**
- * Redis Key 定义常量类
+ * 列车站点价格持久层
  */
-public final class RedisKeyConstant {
-
-    /**
-     * 用户注册锁，Key Prefix + 用户名
-     */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
-
-    /**
-     * 用户注销锁，Key Prefix + 用户名
-     */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
-
-    /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
-     */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
-
-    /**
-     * 用户乘车人列表，Key Prefix + 用户名
-     */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+public interface TrainStationPriceMapper extends BaseMapper<TrainStationPriceDO> {
 }

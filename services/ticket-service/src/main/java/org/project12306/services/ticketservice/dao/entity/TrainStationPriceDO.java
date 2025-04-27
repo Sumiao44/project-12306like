@@ -15,30 +15,46 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.dao.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import org.project12306.commons.database.base.BaseDO;
 
 /**
- * Redis Key 定义常量类
+ * 列车站点价格实体
  */
-public final class RedisKeyConstant {
+@Data
+@TableName("t_train_station_price")
+public class TrainStationPriceDO extends BaseDO {
 
     /**
-     * 用户注册锁，Key Prefix + 用户名
+     * id
      */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    private Long id;
 
     /**
-     * 用户注销锁，Key Prefix + 用户名
+     * 车次id
      */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
+    private Long trainId;
 
     /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
+     * 座位类型
      */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
+    private Integer seatType;
 
     /**
-     * 用户乘车人列表，Key Prefix + 用户名
+     * 出发站点
      */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    private String departure;
+
+    /**
+     * 到达站点
+     */
+    private String arrival;
+
+    /**
+     * 车票价格
+     */
+    private Integer price;
 }

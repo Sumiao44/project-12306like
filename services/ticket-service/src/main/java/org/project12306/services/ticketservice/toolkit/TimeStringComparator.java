@@ -15,30 +15,26 @@
  * limitations under the License.
  */
 
-package org.project12306.services.userservice.common.constant;
+package org.project12306.services.ticketservice.toolkit;
+
+
+import org.project12306.services.ticketservice.dto.domain.TicketListDTO;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 
 /**
- * Redis Key 定义常量类
+ * 自定义时间比较器
  */
-public final class RedisKeyConstant {
+public class TimeStringComparator implements Comparator<TicketListDTO> {
 
-    /**
-     * 用户注册锁，Key Prefix + 用户名
-     */
-    public static final String LOCK_USER_REGISTER = "index-12306-user-service:lock:user-register:";
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
-    /**
-     * 用户注销锁，Key Prefix + 用户名
-     */
-    public static final String USER_DELETION = "index-12306-user-service:user-deletion:";
-
-    /**
-     * 用户注册可复用用户名分片，Key Prefix + Idx
-     */
-    public static final String USER_REGISTER_REUSE_SHARDING = "index-12306-user-service:user-reuse:";
-
-    /**
-     * 用户乘车人列表，Key Prefix + 用户名
-     */
-    public static final String USER_PASSENGER_LIST = "index-12306-user-service:user-passenger-list:";
+    @Override
+    public int compare(TicketListDTO ticketList1, TicketListDTO ticketList2) {
+        LocalTime localTime1 = LocalTime.parse(ticketList1.getDepartureTime(), FORMATTER);
+        LocalTime localTime2 = LocalTime.parse(ticketList2.getDepartureTime(), FORMATTER);
+        return localTime1.compareTo(localTime2);
+    }
 }

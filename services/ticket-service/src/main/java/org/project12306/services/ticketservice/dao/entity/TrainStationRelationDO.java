@@ -15,33 +15,68 @@
  * limitations under the License.
  */
 
-package org.project12306.services.ticketservice.dto.resp;
+package org.project12306.services.ticketservice.dao.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.project12306.commons.database.base.BaseDO;
+
+import java.util.Date;
 
 /**
- * 站点分页查询响应参数
+ * 列车站点关系实体
  */
 @Data
-public class StationQueryRespDTO {
+@TableName("t_train_station_relation")
+public class TrainStationRelationDO extends BaseDO {
 
     /**
-     * 名称
+     * id
      */
-    private String name;
+    private Long id;
 
     /**
-     * 地区编码
+     * 车次id
      */
-    private String code;
+    private Long trainId;
 
     /**
-     * 拼音
+     * 出发站点
      */
-    private String spell;
+    private String departure;
 
     /**
-     * 城市名称
+     * 到达站点
      */
-    private String regionName;
+    private String arrival;
+
+    /**
+     * 起始城市
+     */
+    private String startRegion;
+
+    /**
+     * 终点城市
+     */
+    private String endRegion;
+
+    /**
+     * 始发站标识
+     */
+    private Boolean departureFlag;
+
+    /**
+     * 终点站标识
+     */
+    private Boolean arrivalFlag;
+
+    /**
+     * 出发时间
+     */
+    private Date departureTime;
+
+    /**
+     * 到达时间
+     */
+    private Date arrivalTime;
 }
