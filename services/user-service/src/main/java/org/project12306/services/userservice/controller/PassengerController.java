@@ -9,12 +9,10 @@ import org.project12306.commons.web.Results;
 import org.project12306.convention.result.Result;
 import org.project12306.services.userservice.dto.req.PassengerRemoveReqDTO;
 import org.project12306.services.userservice.dto.req.PassengerReqDTO;
+import org.project12306.services.userservice.dto.resp.PassengerActualRespDTO;
 import org.project12306.services.userservice.dto.resp.PassengerRespDTO;
 import org.project12306.services.userservice.service.PassengerService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,12 +32,19 @@ public class PassengerController {
     public Result<List<PassengerRespDTO>> listPassengerQueryByUsername() {
         return Results.success(passengerService.listPassengerQueryByUsername(UserContext.getUsername()));
     }
+    /**
+     * 根据乘车人 ID 集合查询乘车人列表
+     */
+    @GetMapping("/api/user-service/inner/passenger/actual/query/ids")
+    public Result<List<PassengerActualRespDTO>> listPassengerQueryByIds(@RequestParam("username") String username, @RequestParam("ids") List<Long> ids) {
+        return Results.success(passengerService.listPassengerQueryByIds(username, ids));
+    }
 
     /**
      * 新增乘车人
      */
     @Idempotent(
-            uniqueKeyPrefix = "index12306-user:lock_passenger-alter:",
+            uniqueKeyPrefix = "project12306-user:lock_passenger-alter:",
             key = "T(org.project12306.commons.user.core.UserContext).getUsername()",
             type = IdempotentTypeEnum.SPEL,
             scene = IdempotentSceneEnum.RESTAPI,
@@ -55,7 +60,7 @@ public class PassengerController {
      * 修改乘车人
      */
     @Idempotent(
-            uniqueKeyPrefix = "index12306-user:lock_passenger-alter:",
+            uniqueKeyPrefix = "project12306-user:lock_passenger-alter:",
             key = "T(org.project12306.commons.user.core.UserContext).getUsername()",
             type = IdempotentTypeEnum.SPEL,
             scene = IdempotentSceneEnum.RESTAPI,

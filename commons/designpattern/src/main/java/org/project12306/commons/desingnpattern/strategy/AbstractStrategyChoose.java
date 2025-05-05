@@ -40,7 +40,7 @@ public class AbstractStrategyChoose implements ApplicationListener<ApplicationIn
 
     /**
      * 根据 mark 查询具体策略
-     *
+     * 决定具体策略
      * @param mark          策略标识
      * @param predicateFlag 正则表达式解析标识
      * @return 实际执行策略
@@ -95,6 +95,7 @@ public class AbstractStrategyChoose implements ApplicationListener<ApplicationIn
         return (RESPONSE) executeStrategy.executeResp(requestParam);
     }
 
+    //类似的在springboot启动阶段的事件被启动根据mark填充策略
     @Override
     public void onApplicationEvent(ApplicationInitializingEvent event) {
         Map<String, AbstractExecuteStrategy> actual = ApplicationContextHolder.getBeansOfType(AbstractExecuteStrategy.class);

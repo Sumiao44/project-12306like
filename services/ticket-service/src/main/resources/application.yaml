@@ -33,7 +33,7 @@ spring:
       password: nacos
     sentinel:
       transport:
-        dashboard: localhost:8686
+        dashboard: 192.168.153.135:8686
         port: 8719
   dynamic:
     thread-pool:
@@ -50,6 +50,14 @@ spring:
           maximum-pool-size: 40
           keep-alive-time: 9999
           rejected-handler: CallerRunsPolicy
+
+rocketmq:
+  name-server: 192.168.153.135:9876
+  producer:
+    group: project12306_ticket${unique-name:}-service_common-message-execute_pg
+    send-message-timeout: 2000
+    retry-times-when-send-failed: 1
+    retry-times-when-send-async-failed: 1
 
 mybatis-plus:
   global-config:

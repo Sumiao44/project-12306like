@@ -1,5 +1,6 @@
 package org.project12306.services.ticketservice.service.impl;
 
+import cn.hutool.core.annotation.scanner.FieldAnnotationScanner;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
@@ -7,34 +8,66 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.project12306.commons.base.ApplicationContextHolder;
 import org.project12306.commons.cache.DistributedCache;
 import org.project12306.commons.cache.toolkit.CacheUtil;
 import org.project12306.commons.desingnpattern.chain.AbstractChainContext;
+import org.project12306.commons.idempotent.annotation.Idempotent;
+import org.project12306.commons.idempotent.enums.IdempotentSceneEnum;
+import org.project12306.commons.idempotent.enums.IdempotentTypeEnum;
+import org.project12306.commons.log.annotation.ILog;
+import org.project12306.commons.user.core.UserContext;
+import org.project12306.convention.exception.ServiceException;
+import org.project12306.convention.result.Result;
+import org.project12306.services.ticketservice.common.enums.SourceEnum;
 import org.project12306.services.ticketservice.common.enums.TicketChainMarkEnum;
+import org.project12306.services.ticketservice.common.enums.TicketStatusEnum;
 import org.project12306.services.ticketservice.common.enums.VehicleTypeEnum;
 import org.project12306.services.ticketservice.dao.entity.*;
 import org.project12306.services.ticketservice.dao.mapper.*;
 import org.project12306.services.ticketservice.dto.domain.SeatClassDTO;
+import org.project12306.services.ticketservice.dto.domain.SeatTypeCountDTO;
 import org.project12306.services.ticketservice.dto.domain.TicketListDTO;
+import org.project12306.services.ticketservice.dto.req.PurchaseTicketPassengerDetailDTO;
+import org.project12306.services.ticketservice.dto.req.PurchaseTicketReqDTO;
 import org.project12306.services.ticketservice.dto.req.TicketPageQueryReqDTO;
+import org.project12306.services.ticketservice.dto.resp.TicketOrderDetailRespDTO;
 import org.project12306.services.ticketservice.dto.resp.TicketPageQueryRespDTO;
+import org.project12306.services.ticketservice.dto.resp.TicketPurchaseRespDTO;
+import org.project12306.services.ticketservice.remote.TicketOrderRemoteService;
+import org.project12306.services.ticketservice.remote.dto.TicketOrderCreateRemoteReqDTO;
+import org.project12306.services.ticketservice.remote.dto.TicketOrderItemCreateRemoteReqDTO;
+import org.project12306.services.ticketservice.service.SeatService;
 import org.project12306.services.ticketservice.service.TicketService;
 import org.project12306.services.ticketservice.service.cache.SeatMarginCacheLoader;
+import org.project12306.services.ticketservice.service.handler.ticket.dto.TokenResultDTO;
+import org.project12306.services.ticketservice.service.handler.ticket.dto.TrainPurchaseTicketRespDTO;
+import org.project12306.services.ticketservice.service.handler.ticket.select.TrainSeatTypeSelector;
+import org.project12306.services.ticketservice.service.handler.ticket.tokenbucket.TicketAvailabilityTokenBucket;
 import org.project12306.services.ticketservice.toolkit.DateUtil;
 import org.project12306.services.ticketservice.toolkit.TimeStringComparator;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.project12306.services.ticketservice.common.constant.Index12306Constant.ADVANCE_TICKET_DAY;
@@ -45,8 +78,10 @@ import static org.project12306.services.ticketservice.service.impl.DateUtil.conv
  * 车票接口实现
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
-public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> implements TicketService {
+public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> implements TicketService, CommandLineRunner {
+
 
     private final StationMapper stationMapper;
     private final TrainMapper trainMapper;
@@ -56,6 +91,13 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> imple
     private final RedissonClient redissonClient;
     private final AbstractChainContext<TicketPageQueryReqDTO> ticketPageQueryAbstractChainContext;
     private final SeatMarginCacheLoader seatMarginCacheLoader;
+    private final AbstractChainContext<PurchaseTicketReqDTO> purchaseTicketAbstractChainContext;
+    private final ConfigurableEnvironment environment;
+    private final SeatService seatService;
+    private final TicketAvailabilityTokenBucket ticketAvailabilityTokenBucket;
+    private final TrainSeatTypeSelector trainSeatTypeSelector;
+    private final TicketOrderRemoteService ticketOrderRemoteService;
+    private TicketService ticketService;
     @Value("${framework.cache.redis.prefix:}")
     private String cacheRedisPrefix;
 
@@ -290,6 +332,123 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> imple
     }
 
 
+    /**
+     * 用幂等性防止重复购买
+     * @param requestParam 车票购买请求参数
+     * @return
+     */
+    @ILog
+    @Idempotent(
+            uniqueKeyPrefix = "project12306-ticket:lock_purchase-tickets:",
+            key = "T(org.project12306.commons.base.ApplicationContextHolder).getBean('environment').getProperty('unique-name', '')"
+                    + "+'_'+"
+                    + "T(org.project12306.commons.user.core.UserContext).getUsername()",
+            message = "正在执行下单流程，请稍后...",
+            scene = IdempotentSceneEnum.RESTAPI,
+            type = IdempotentTypeEnum.SPEL
+    )
+    @Override
+    public TicketPurchaseRespDTO purchaseTicketsV1(PurchaseTicketReqDTO requestParam) {
+        // 责任链模式，验证 1：参数必填 2：参数正确性 3：乘客是否已买当前车次等...
+        purchaseTicketAbstractChainContext.handler(TicketChainMarkEnum.TRAIN_PURCHASE_TICKET_FILTER.name(), requestParam);
+        // v1 版本购票存在 4 个较为严重的问题，v2 版本相比较 v1 版本更具有业务特点以及性能，整体提升较大
+        // 写了详细的 v2 版本购票升级指南，详情查看：https://nageoffer.com/12306/question
+
+        //这么暴力啊，一列车直接用分布式锁锁住让乘客一个个买
+        String lockKey = environment.resolvePlaceholders(String.format(LOCK_PURCHASE_TICKETS, requestParam.getTrainId()));
+        RLock lock = redissonClient.getLock(lockKey);
+        lock.lock();
+        try {
+            //直接调用将会绕开事务，所以这里采用服务进行调用，能够正常应用事务
+            return ticketService.executePurchaseTickets(requestParam);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private final Cache<String, ReentrantLock> localLockMap = Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.DAYS)
+            .build();
+
+    private final Cache<String, Object> tokenTicketsRefreshMap = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
+
+    @ILog
+    @Idempotent(
+            uniqueKeyPrefix = "project12306-ticket:lock_purchase-tickets:",
+            key = "T(org.project12306.commons.base.ApplicationContextHolder).getBean('environment').getProperty('unique-name', '')"
+                    + "+'_'+"
+                    + "T(org.project12306.commons.user.core.UserContext).getUsername()",
+            message = "正在执行下单流程，请稍后...",
+            scene = IdempotentSceneEnum.RESTAPI,
+            type = IdempotentTypeEnum.SPEL
+    )
+    @Override
+    public TicketPurchaseRespDTO purchaseTicketsV2(PurchaseTicketReqDTO requestParam) {
+        // 责任链模式，验证 1：参数必填 2：参数正确性 3：乘客是否已买当前车次等...
+        purchaseTicketAbstractChainContext.handler(TicketChainMarkEnum.TRAIN_PURCHASE_TICKET_FILTER.name(), requestParam);
+        // 为什么需要令牌限流？余票缓存限流不可以么？详情查看：https://nageoffer.com/12306/question
+        TokenResultDTO tokenResult = ticketAvailabilityTokenBucket.takeTokenFromBucket(requestParam);
+        if (tokenResult.getTokenIsNull()) {
+            Object ifPresentObj = tokenTicketsRefreshMap.getIfPresent(requestParam.getTrainId());
+            if (ifPresentObj == null) {
+                synchronized (TicketService.class) {
+                    if (tokenTicketsRefreshMap.getIfPresent(requestParam.getTrainId()) == null) {
+                        ifPresentObj = new Object();
+                        tokenTicketsRefreshMap.put(requestParam.getTrainId(), ifPresentObj);
+                        tokenIsNullRefreshToken(requestParam, tokenResult);
+                    }
+                }
+            }
+            throw new ServiceException("列车站点已无余票");
+        }
+        // v1 版本购票存在 4 个较为严重的问题，v2 版本相比较 v1 版本更具有业务特点以及性能，整体提升较大
+        // 写了详细的 v2 版本购票升级指南，详情查看：https://nageoffer.com/12306/question
+        List<ReentrantLock> localLockList = new ArrayList<>();
+        List<RLock> distributedLockList = new ArrayList<>();
+        Map<Integer, List<PurchaseTicketPassengerDetailDTO>> seatTypeMap = requestParam.getPassengers().stream()
+                .collect(Collectors.groupingBy(PurchaseTicketPassengerDetailDTO::getSeatType));
+        seatTypeMap.forEach((searType, count) -> {
+            String lockKey = environment.resolvePlaceholders(String.format(LOCK_PURCHASE_TICKETS_V2, requestParam.getTrainId(), searType));
+            ReentrantLock localLock = localLockMap.getIfPresent(lockKey);
+            if (localLock == null) {
+                synchronized (TicketService.class) {
+                    if ((localLock = localLockMap.getIfPresent(lockKey)) == null) {
+                        localLock = new ReentrantLock(true);
+                        localLockMap.put(lockKey, localLock);
+                    }
+                }
+            }
+            localLockList.add(localLock);
+            RLock distributedLock = redissonClient.getFairLock(lockKey);
+            distributedLockList.add(distributedLock);
+        });
+        try {
+            localLockList.forEach(ReentrantLock::lock);
+            distributedLockList.forEach(RLock::lock);
+            return ticketService.executePurchaseTickets(requestParam);
+        } finally {
+            localLockList.forEach(localLock -> {
+                try {
+                    localLock.unlock();
+                } catch (Throwable ignored) {
+                }
+            });
+            distributedLockList.forEach(distributedLock -> {
+                try {
+                    distributedLock.unlock();
+                } catch (Throwable ignored) {
+                }
+            });
+        }
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        ticketService = ApplicationContextHolder.getBean(TicketService.class);
+    }
+
 
 
     private List<String> buildDepartureStationList(List<TicketListDTO> seatResults) {
@@ -317,6 +476,136 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> imple
             }
         }
         return trainBrandSet.stream().toList();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Throwable.class)//可抛出的异常全部进行捕获
+    public TicketPurchaseRespDTO executePurchaseTickets(PurchaseTicketReqDTO requestParam) {
+
+        String trainId = requestParam.getTrainId();
+        // 缓存中查询列车对象
+        TrainDO trainDO = distributedCache.safeGet(
+                TRAIN_INFO + trainId,
+                TrainDO.class,
+                () -> trainMapper.selectById(trainId),
+                ADVANCE_TICKET_DAY,
+                TimeUnit.DAYS);
+
+        //根据列车类型和乘车人选择的位置进行出票
+        List<TrainPurchaseTicketRespDTO> trainPurchaseTicketResults = trainSeatTypeSelector.select(trainDO.getTrainType(), requestParam);
+
+        //生成票务记录并持久化
+        List<TicketDO> ticketDOList = trainPurchaseTicketResults.stream()
+                .map(each -> TicketDO.builder()
+                        .username(UserContext.getUsername())
+                        .trainId(Long.parseLong(requestParam.getTrainId()))
+                        .carriageNumber(each.getCarriageNumber())
+                        .seatNumber(each.getSeatNumber())
+                        .passengerId(each.getPassengerId())
+                        .ticketStatus(TicketStatusEnum.UNPAID.getCode())
+                        .build())
+                .toList();
+        saveBatch(ticketDOList);
+
+
+        Result<String> ticketOrderResult;
+        List<TicketOrderDetailRespDTO> ticketOrderDetailResults = new ArrayList<>();
+        try {
+            //远程调用order根据票务记录生成订单
+            List<TicketOrderItemCreateRemoteReqDTO> orderItemCreateRemoteReqDTOList = new ArrayList<>();
+            trainPurchaseTicketResults.forEach(each -> {
+                TicketOrderItemCreateRemoteReqDTO orderItemCreateRemoteReqDTO = TicketOrderItemCreateRemoteReqDTO.builder()
+                        .amount(each.getAmount())
+                        .carriageNumber(each.getCarriageNumber())
+                        .seatNumber(each.getSeatNumber())
+                        .idCard(each.getIdCard())
+                        .idType(each.getIdType())
+                        .phone(each.getPhone())
+                        .seatType(each.getSeatType())
+                        .ticketType(each.getUserType())
+                        .realName(each.getRealName())
+                        .build();
+                TicketOrderDetailRespDTO ticketOrderDetailRespDTO = TicketOrderDetailRespDTO.builder()
+                        .amount(each.getAmount())
+                        .carriageNumber(each.getCarriageNumber())
+                        .seatNumber(each.getSeatNumber())
+                        .idCard(each.getIdCard())
+                        .idType(each.getIdType())
+                        .seatType(each.getSeatType())
+                        .ticketType(each.getUserType())
+                        .realName(each.getRealName())
+                        .build();
+                orderItemCreateRemoteReqDTOList.add(orderItemCreateRemoteReqDTO);
+                ticketOrderDetailResults.add(ticketOrderDetailRespDTO);
+            });
+
+
+            LambdaQueryWrapper<TrainStationRelationDO> queryWrapper = Wrappers.lambdaQuery(TrainStationRelationDO.class)
+                    .eq(TrainStationRelationDO::getTrainId, trainId)
+                    .eq(TrainStationRelationDO::getDeparture, requestParam.getDeparture())
+                    .eq(TrainStationRelationDO::getArrival, requestParam.getArrival());
+            TrainStationRelationDO trainStationRelationDO = trainStationRelationMapper.selectOne(queryWrapper);
+
+
+            TicketOrderCreateRemoteReqDTO orderCreateRemoteReqDTO = TicketOrderCreateRemoteReqDTO.builder()
+                    .departure(requestParam.getDeparture())
+                    .arrival(requestParam.getArrival())
+                    .orderTime(new Date())
+                    .source(SourceEnum.INTERNET.getCode())
+                    .trainNumber(trainDO.getTrainNumber())
+                    .departureTime(trainStationRelationDO.getDepartureTime())
+                    .arrivalTime(trainStationRelationDO.getArrivalTime())
+                    .ridingDate(trainStationRelationDO.getDepartureTime())
+                    .userId(UserContext.getUserId())
+                    .username(UserContext.getUsername())
+                    .trainId(Long.parseLong(requestParam.getTrainId()))
+                    .ticketOrderItems(orderItemCreateRemoteReqDTOList)
+                    .build();
+
+            //创建订单后的返回值
+            ticketOrderResult = ticketOrderRemoteService.createTicketOrder(orderCreateRemoteReqDTO);
+            if (!ticketOrderResult.isSuccess() || StrUtil.isBlank(ticketOrderResult.getData())) {
+                log.error("订单服务调用失败，返回结果：{}", ticketOrderResult.getMessage());
+                throw new ServiceException("订单服务调用失败");
+            }
+
+        } catch (Throwable ex) {
+            log.error("远程调用订单服务创建错误，请求参数：{}", JSON.toJSONString(requestParam), ex);
+            throw ex;
+        }
+
+        return new TicketPurchaseRespDTO(ticketOrderResult.getData(), ticketOrderDetailResults);
+    }
+    private final ScheduledExecutorService tokenIsNullRefreshExecutor = Executors.newScheduledThreadPool(1);
+
+    private void tokenIsNullRefreshToken(PurchaseTicketReqDTO requestParam, TokenResultDTO tokenResult) {
+        RLock lock = redissonClient.getLock(String.format(LOCK_TOKEN_BUCKET_ISNULL, requestParam.getTrainId()));
+        if (!lock.tryLock()) {
+            return;
+        }
+        tokenIsNullRefreshExecutor.schedule(() -> {
+            try {
+                List<Integer> seatTypes = new ArrayList<>();
+                Map<Integer, Integer> tokenCountMap = new HashMap<>();
+                tokenResult.getTokenIsNullSeatTypeCounts().stream()
+                        .map(each -> each.split("_"))
+                        .forEach(split -> {
+                            int seatType = Integer.parseInt(split[0]);
+                            seatTypes.add(seatType);
+                            tokenCountMap.put(seatType, Integer.parseInt(split[1]));
+                        });
+                List<SeatTypeCountDTO> seatTypeCountDTOList = seatService.listSeatTypeCount(Long.parseLong(requestParam.getTrainId()), requestParam.getDeparture(), requestParam.getArrival(), seatTypes);
+                for (SeatTypeCountDTO each : seatTypeCountDTOList) {
+                    Integer tokenCount = tokenCountMap.get(each.getSeatType());
+                    if (tokenCount <= each.getSeatCount()) {
+                        ticketAvailabilityTokenBucket.delTokenInBucket(requestParam);
+                        break;
+                    }
+                }
+            } finally {
+                lock.unlock();
+            }
+        }, 10, TimeUnit.SECONDS);
     }
 
 }

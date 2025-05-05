@@ -3,6 +3,7 @@ package org.project12306.services.userservice.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.PhoneUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -20,6 +21,7 @@ import org.project12306.services.userservice.dao.entity.PassengerDO;
 import org.project12306.services.userservice.dao.mapper.PassengerMapper;
 import org.project12306.services.userservice.dto.req.PassengerRemoveReqDTO;
 import org.project12306.services.userservice.dto.req.PassengerReqDTO;
+import org.project12306.services.userservice.dto.resp.PassengerActualRespDTO;
 import org.project12306.services.userservice.dto.resp.PassengerRespDTO;
 import org.project12306.services.userservice.service.PassengerService;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.project12306.services.userservice.common.constant.RedisKeyConstant.USER_PASSENGER_LIST;
 
@@ -135,6 +138,18 @@ public class PassengerServiceImpl implements PassengerService {
             throw ex;
         }
         delUserPassengerCache(username);
+    }
+
+    @Override
+    public List<PassengerActualRespDTO> listPassengerQueryByIds(String username, List<Long> ids) {
+        String actualUserPassengerListStr = getActualUserPassengerListStr(username);
+        if (StrUtil.isEmpty(actualUserPassengerListStr)) {
+            return null;
+        }
+        return JSON.parseArray(actualUserPassengerListStr, PassengerDO.class)
+                .stream().filter(passengerDO -> ids.contains(passengerDO.getId()))
+                .map(each -> BeanUtil.convert(each, PassengerActualRespDTO.class))
+                .collect(Collectors.toList());
     }
 
 
