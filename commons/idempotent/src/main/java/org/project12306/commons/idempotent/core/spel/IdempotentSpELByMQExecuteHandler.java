@@ -78,7 +78,7 @@ public final class IdempotentSpELByMQExecuteHandler extends AbstractIdempotentEx
 
         //执行失败返回非空
         if (Objects.nonNull(absentAndGet)) {
-            //返回结果为0则正在消费中，即发生错误
+            //返回结果为0则锁被占用正在消费中，即发生错误
             boolean error = IdempotentMQConsumeStatusEnum.isError(absentAndGet);
             LogUtil.getLog(wrapper.getJoinPoint()).warn("[{}] MQ repeated consumption, {}.", uniqueKey, error ? "Wait for the client to delay consumption" : "Status is completed");
             throw new RepeatConsumptionException(error);
@@ -127,6 +127,7 @@ public final class IdempotentSpELByMQExecuteHandler extends AbstractIdempotentEx
             Idempotent idempotent = wrapper.getIdempotent();
             String uniqueKey = idempotent.uniqueKeyPrefix() + wrapper.getLockKey();
             try {
+                //消费完成后标记键值为消费完成
                 distributedCache.put(uniqueKey, IdempotentMQConsumeStatusEnum.CONSUMED.getCode(), idempotent.keyTimeout(), TimeUnit.SECONDS);
             } catch (Throwable ex) {
                 LogUtil.getLog(wrapper.getJoinPoint()).error("[{}] Failed to set MQ anti-heavy token.", uniqueKey);

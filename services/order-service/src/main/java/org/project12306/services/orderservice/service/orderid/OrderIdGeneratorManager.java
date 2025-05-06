@@ -48,6 +48,10 @@ public final class OrderIdGeneratorManager implements InitializingBean {
         return DISTRIBUTED_ID_GENERATOR.generateId() + String.valueOf(userId % 1000000);
     }
 
+    /**
+     * 在bean初始化的数据填充和后执行
+     * @throws Exception
+     */
     @Override
     public void afterPropertiesSet() throws Exception {
         String LOCK_KEY = "distributed_id_generator_lock_key";

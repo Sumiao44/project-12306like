@@ -20,6 +20,7 @@ package org.project12306.services.orderservice.controller;
 import lombok.RequiredArgsConstructor;
 import org.project12306.commons.web.Results;
 import org.project12306.convention.result.Result;
+import org.project12306.services.orderservice.dto.req.CancelTicketOrderReqDTO;
 import org.project12306.services.orderservice.dto.req.TicketOrderCreateReqDTO;
 import org.project12306.services.orderservice.service.OrderService;
 import org.springframework.web.bind.annotation.*;
@@ -43,4 +44,20 @@ public class TicketOrderController {
         return Results.success(orderService.createTicketOrder(requestParam));
     }
 
+    /**
+     * 车票订单关闭
+     */
+    @PostMapping("/api/order-service/order/ticket/close")
+    public Result<Boolean> closeTickOrder(@RequestBody CancelTicketOrderReqDTO requestParam) {
+        return Results.success(orderService.closeTickOrder(requestParam));
+    }
+
+
+    /**
+     * 车票订单取消
+     */
+    @PostMapping("/api/order-service/order/ticket/cancel")
+    public Result<Boolean> cancelTickOrder(@RequestBody CancelTicketOrderReqDTO requestParam) {
+        return Results.success(orderService.cancelTickOrder(requestParam));
+    }
 }

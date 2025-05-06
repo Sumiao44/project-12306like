@@ -18,6 +18,7 @@
 package org.project12306.services.ticketservice.remote;
 
 import org.project12306.convention.result.Result;
+import org.project12306.services.ticketservice.dto.req.CancelTicketOrderReqDTO;
 import org.project12306.services.ticketservice.dto.req.TicketOrderItemQueryReqDTO;
 import org.project12306.services.ticketservice.dto.resp.TicketOrderDetailRespDTO;
 import org.project12306.services.ticketservice.remote.dto.TicketOrderCreateRemoteReqDTO;
@@ -45,5 +46,14 @@ public interface TicketOrderRemoteService {
      */
     @PostMapping("/api/order-service/order/ticket/create")
     Result<String> createTicketOrder(@RequestBody TicketOrderCreateRemoteReqDTO requestParam);
+
+    /**
+     * 车票订单关闭
+     *
+     * @param requestParam 车票订单关闭入参
+     * @return 关闭订单返回结果
+     */
+    @PostMapping("/api/order-service/order/ticket/close")
+    Result<Boolean> closeTickOrder(@RequestBody CancelTicketOrderReqDTO requestParam);
 
 }

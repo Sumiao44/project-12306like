@@ -106,4 +106,21 @@ public class SeatServiceImpl extends ServiceImpl<SeatMapper, SeatDO> implements 
         List<SeatDO> seatDOList = seatMapper.selectList(queryWrapper);
         return seatDOList.stream().map(SeatDO::getSeatNumber).collect(Collectors.toList());
     }
+
+    @Override
+    public void unlock(String trainId, String departure, String arrival, List<TrainPurchaseTicketRespDTO> trainPurchaseTicketResults) {
+        List<RouteDTO> routeList = trainStationService.listTakeoutTrainStationRoute(trainId, departure, arrival);
+        trainPurchaseTicketResults.forEach(each -> routeList.forEach(item -> {
+            LambdaUpdateWrapper<SeatDO> updateWrapper = Wrappers.lambdaUpdate(SeatDO.class)
+                    .eq(SeatDO::getTrainId, trainId)
+                    .eq(SeatDO::getCarriageNumber, each.getCarriageNumber())
+                    .eq(SeatDO::getStartStation, item.getStartStation())
+                    .eq(SeatDO::getEndStation, item.getEndStation())
+                    .eq(SeatDO::getSeatNumber, each.getSeatNumber());
+            SeatDO updateSeatDO = SeatDO.builder()
+                    .seatStatus(SeatStatusEnum.AVAILABLE.getCode())
+                    .build();
+            seatMapper.update(updateSeatDO, updateWrapper);
+        }));
+    }
 }

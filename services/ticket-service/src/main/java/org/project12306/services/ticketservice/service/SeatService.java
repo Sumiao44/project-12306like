@@ -67,4 +67,13 @@ public interface SeatService extends IService<SeatDO> {
      */
     List<String> listAvailableSeat(String trainId, String carriageNumber, Integer seatType, String departure, String arrival);
 
+    /**
+     * 解锁选中以及沿途车票状态
+     *
+     * @param trainId                    列车 ID
+     * @param departure                  出发站
+     * @param arrival                    到达站
+     * @param trainPurchaseTicketResults 乘车人以及座位信息
+     */
+    void unlock(String trainId, String departure, String arrival, List<TrainPurchaseTicketRespDTO> trainPurchaseTicketResults);
 }

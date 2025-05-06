@@ -388,47 +388,62 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> imple
     public TicketPurchaseRespDTO purchaseTicketsV2(PurchaseTicketReqDTO requestParam) {
         // 责任链模式，验证 1：参数必填 2：参数正确性 3：乘客是否已买当前车次等...
         purchaseTicketAbstractChainContext.handler(TicketChainMarkEnum.TRAIN_PURCHASE_TICKET_FILTER.name(), requestParam);
-        // 为什么需要令牌限流？余票缓存限流不可以么？详情查看：https://nageoffer.com/12306/question
+        //使用令牌限流
         TokenResultDTO tokenResult = ticketAvailabilityTokenBucket.takeTokenFromBucket(requestParam);
         if (tokenResult.getTokenIsNull()) {
+            //令牌桶为空即余票不足
             Object ifPresentObj = tokenTicketsRefreshMap.getIfPresent(requestParam.getTrainId());
             if (ifPresentObj == null) {
+                //为null说明正在刷新，存在于刷新set中，未被标记为刷新完成
+                //类对象锁保证全局唯一
                 synchronized (TicketService.class) {
                     if (tokenTicketsRefreshMap.getIfPresent(requestParam.getTrainId()) == null) {
+                        //双重判断
                         ifPresentObj = new Object();
                         tokenTicketsRefreshMap.put(requestParam.getTrainId(), ifPresentObj);
                         tokenIsNullRefreshToken(requestParam, tokenResult);
                     }
                 }
             }
+            //无余票
             throw new ServiceException("列车站点已无余票");
         }
-        // v1 版本购票存在 4 个较为严重的问题，v2 版本相比较 v1 版本更具有业务特点以及性能，整体提升较大
-        // 写了详细的 v2 版本购票升级指南，详情查看：https://nageoffer.com/12306/question
+
         List<ReentrantLock> localLockList = new ArrayList<>();
         List<RLock> distributedLockList = new ArrayList<>();
         Map<Integer, List<PurchaseTicketPassengerDetailDTO>> seatTypeMap = requestParam.getPassengers().stream()
                 .collect(Collectors.groupingBy(PurchaseTicketPassengerDetailDTO::getSeatType));
         seatTypeMap.forEach((searType, count) -> {
+            //根据座位类型生成锁
             String lockKey = environment.resolvePlaceholders(String.format(LOCK_PURCHASE_TICKETS_V2, requestParam.getTrainId(), searType));
+            //可重入锁
             ReentrantLock localLock = localLockMap.getIfPresent(lockKey);
             if (localLock == null) {
+                //分组后加锁执行
                 synchronized (TicketService.class) {
                     if ((localLock = localLockMap.getIfPresent(lockKey)) == null) {
+                        //生成锁
                         localLock = new ReentrantLock(true);
                         localLockMap.put(lockKey, localLock);
                     }
                 }
             }
+            //放入锁列表，单机线程同步
             localLockList.add(localLock);
             RLock distributedLock = redissonClient.getFairLock(lockKey);
+            //分布式实现跨节点同步
             distributedLockList.add(distributedLock);
         });
+
+
         try {
+            //把所有类型的锁都上锁
             localLockList.forEach(ReentrantLock::lock);
             distributedLockList.forEach(RLock::lock);
+            //实现核心购票逻辑
             return ticketService.executePurchaseTickets(requestParam);
         } finally {
+            //释放所有锁
             localLockList.forEach(localLock -> {
                 try {
                     localLock.unlock();
