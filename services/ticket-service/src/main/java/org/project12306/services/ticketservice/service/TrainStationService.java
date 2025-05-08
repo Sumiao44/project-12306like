@@ -1,6 +1,7 @@
 package org.project12306.services.ticketservice.service;
 
 import org.project12306.services.ticketservice.dto.domain.RouteDTO;
+import org.project12306.services.ticketservice.dto.resp.TrainStationQueryRespDTO;
 
 import java.util.List;
 
@@ -28,4 +29,13 @@ public interface TrainStationService {
      * @return 需扣减列车站点路线关系信息
      */
     List<RouteDTO> listTakeoutTrainStationRoute(String trainId, String departure, String arrival);
+
+    /**
+     * 根据列车 ID 查询站点信息
+     *
+     * @param trainId 列车 ID
+     * @return 列车经停站信息
+     */
+    List<TrainStationQueryRespDTO> listTrainStationQuery(String trainId);
+
 }
