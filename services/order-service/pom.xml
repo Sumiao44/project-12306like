@@ -55,6 +55,24 @@
             <version>2.1.0</version>
         </dependency>
 
+        <!--openfeign-->
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-okhttp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <!-- openfeign 已不再提供默认负载均衡器 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-loadbalancer</artifactId>
+        </dependency>
+
+
         <!-- 自定义依赖-start -->
         <dependency>
             <groupId>org.project12306</groupId>

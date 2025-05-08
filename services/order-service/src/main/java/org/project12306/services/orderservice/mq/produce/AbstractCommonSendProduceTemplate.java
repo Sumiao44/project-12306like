@@ -71,7 +71,7 @@ public abstract class AbstractCommonSendProduceTemplate<T> {
                     destinationBuilder.toString(),
                     buildMessage(messageSendEvent, baseSendExtendDTO),
                     baseSendExtendDTO.getSentTimeout(),
-                    Optional.ofNullable(baseSendExtendDTO.getDelayLevel()).orElse(0)
+                    Optional.ofNullable(Integer.valueOf(1)/*baseSendExtendDTO.getDelayLevel()*/).orElse(0)
             );
             log.info("[{}] 消息发送结果：{}，消息ID：{}，消息Keys：{}", baseSendExtendDTO.getEventName(), sendResult.getSendStatus(), sendResult.getMsgId(), baseSendExtendDTO.getKeys());
         } catch (Throwable ex) {

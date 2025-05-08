@@ -137,7 +137,7 @@ public final class TrainSeatTypeSelector {
             TrainStationPriceDO trainStationPriceDO = trainStationPriceMapper.selectOne(lambdaQueryWrapper);
             each.setAmount(trainStationPriceDO.getPrice());
         });
-        // 购买列车中间站点余票如何更新？详细查看：https://nageoffer.com/12306/question
+
         seatService.lockSeat(requestParam.getTrainId(), requestParam.getDeparture(), requestParam.getArrival(), actualResult);
         return actualResult;
     }

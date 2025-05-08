@@ -33,6 +33,7 @@ import org.project12306.services.orderservice.dao.entity.OrderItemDO;
 import org.project12306.services.orderservice.dao.mapper.OrderItemMapper;
 import org.project12306.services.orderservice.dao.mapper.OrderMapper;
 import org.project12306.services.orderservice.dto.req.TicketOrderItemQueryReqDTO;
+import org.project12306.services.orderservice.dto.resp.TicketOrderPassengerDetailRespDTO;
 import org.project12306.services.orderservice.service.OrderItemService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -48,5 +49,13 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class OrderItemServiceImpl extends ServiceImpl<OrderItemMapper, OrderItemDO> implements OrderItemService {
-
+    private final OrderItemMapper orderItemMapper;
+    @Override
+    public List<TicketOrderPassengerDetailRespDTO> queryTicketItemOrderById(TicketOrderItemQueryReqDTO requestParam) {
+        LambdaQueryWrapper<OrderItemDO> queryWrapper = Wrappers.lambdaQuery(OrderItemDO.class)
+                .eq(OrderItemDO::getOrderSn, requestParam.getOrderSn())
+                .in(OrderItemDO::getId, requestParam.getOrderItemRecordIds());
+        List<OrderItemDO> orderItemDOList = orderItemMapper.selectList(queryWrapper);
+        return BeanUtil.convert(orderItemDOList, TicketOrderPassengerDetailRespDTO.class);
+    }
 }

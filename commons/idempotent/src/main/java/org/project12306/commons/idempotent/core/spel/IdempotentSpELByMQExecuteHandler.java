@@ -19,6 +19,7 @@ package org.project12306.commons.idempotent.core.spel;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.project12306.commons.cache.DistributedCache;
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 基于 SpEL 方法验证请求幂等性，适用于 MQ 场景
  */
+@Slf4j
 @RequiredArgsConstructor
 public final class IdempotentSpELByMQExecuteHandler extends AbstractIdempotentExecuteHandler implements IdempotentSpELService {
     /**
@@ -73,6 +75,7 @@ public final class IdempotentSpELByMQExecuteHandler extends AbstractIdempotentEx
     @Override
     public void handler(IdempotentParamWrapper wrapper) {
         String uniqueKey = wrapper.getIdempotent().uniqueKeyPrefix() + wrapper.getLockKey();
+        log.info("唯一键："+uniqueKey);
         //向redis中插入数据表示mq中的该键正在被执行，消费中
         String absentAndGet = this.setIfAbsentAndGet(uniqueKey, IdempotentMQConsumeStatusEnum.CONSUMING.getCode(), TIMEOUT, TimeUnit.SECONDS);
 
