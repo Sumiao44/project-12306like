@@ -19,10 +19,14 @@ package org.project12306.services.ticketservice.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.project12306.services.ticketservice.dao.entity.TicketDO;
+import org.project12306.services.ticketservice.dto.req.CancelTicketOrderReqDTO;
 import org.project12306.services.ticketservice.dto.req.PurchaseTicketReqDTO;
+import org.project12306.services.ticketservice.dto.req.RefundTicketReqDTO;
 import org.project12306.services.ticketservice.dto.req.TicketPageQueryReqDTO;
+import org.project12306.services.ticketservice.dto.resp.RefundTicketRespDTO;
 import org.project12306.services.ticketservice.dto.resp.TicketPageQueryRespDTO;
 import org.project12306.services.ticketservice.dto.resp.TicketPurchaseRespDTO;
+import org.project12306.services.ticketservice.remote.dto.PayInfoRespDTO;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
@@ -64,5 +68,26 @@ public interface TicketService extends IService<TicketDO> {
      */
     TicketPurchaseRespDTO executePurchaseTickets(@RequestBody PurchaseTicketReqDTO requestParam);
 
+    /**
+     * 取消车票订单
+     *
+     * @param requestParam 取消车票订单入参
+     */
+    void cancelTicketOrder(CancelTicketOrderReqDTO requestParam);
 
+    /**
+     * 支付单详情查询
+     *
+     * @param orderSn 订单号
+     * @return 支付单详情
+     */
+    PayInfoRespDTO getPayInfo(String orderSn);
+
+    /**
+     * 公共退款接口
+     *
+     * @param requestParam 退款请求参数
+     * @return 退款返回详情
+     */
+    RefundTicketRespDTO commonTicketRefund(RefundTicketReqDTO requestParam);
 }

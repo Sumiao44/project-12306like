@@ -2,6 +2,7 @@ package org.project12306.services.ticketservice.service.impl;
 
 import cn.hutool.core.annotation.scanner.FieldAnnotationScanner;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.project12306.commons.base.ApplicationContextHolder;
 import org.project12306.commons.cache.DistributedCache;
 import org.project12306.commons.cache.toolkit.CacheUtil;
+import org.project12306.commons.common.toolkit.BeanUtil;
 import org.project12306.commons.desingnpattern.chain.AbstractChainContext;
 import org.project12306.commons.idempotent.annotation.Idempotent;
 import org.project12306.commons.idempotent.enums.IdempotentSceneEnum;
@@ -24,26 +26,24 @@ import org.project12306.commons.log.annotation.ILog;
 import org.project12306.commons.user.core.UserContext;
 import org.project12306.convention.exception.ServiceException;
 import org.project12306.convention.result.Result;
-import org.project12306.services.ticketservice.common.enums.SourceEnum;
-import org.project12306.services.ticketservice.common.enums.TicketChainMarkEnum;
-import org.project12306.services.ticketservice.common.enums.TicketStatusEnum;
-import org.project12306.services.ticketservice.common.enums.VehicleTypeEnum;
+import org.project12306.services.ticketservice.common.enums.*;
 import org.project12306.services.ticketservice.dao.entity.*;
 import org.project12306.services.ticketservice.dao.mapper.*;
+import org.project12306.services.ticketservice.dto.domain.RouteDTO;
 import org.project12306.services.ticketservice.dto.domain.SeatClassDTO;
 import org.project12306.services.ticketservice.dto.domain.SeatTypeCountDTO;
 import org.project12306.services.ticketservice.dto.domain.TicketListDTO;
-import org.project12306.services.ticketservice.dto.req.PurchaseTicketPassengerDetailDTO;
-import org.project12306.services.ticketservice.dto.req.PurchaseTicketReqDTO;
-import org.project12306.services.ticketservice.dto.req.TicketPageQueryReqDTO;
+import org.project12306.services.ticketservice.dto.req.*;
+import org.project12306.services.ticketservice.dto.resp.RefundTicketRespDTO;
 import org.project12306.services.ticketservice.dto.resp.TicketOrderDetailRespDTO;
 import org.project12306.services.ticketservice.dto.resp.TicketPageQueryRespDTO;
 import org.project12306.services.ticketservice.dto.resp.TicketPurchaseRespDTO;
+import org.project12306.services.ticketservice.remote.PayRemoteService;
 import org.project12306.services.ticketservice.remote.TicketOrderRemoteService;
-import org.project12306.services.ticketservice.remote.dto.TicketOrderCreateRemoteReqDTO;
-import org.project12306.services.ticketservice.remote.dto.TicketOrderItemCreateRemoteReqDTO;
+import org.project12306.services.ticketservice.remote.dto.*;
 import org.project12306.services.ticketservice.service.SeatService;
 import org.project12306.services.ticketservice.service.TicketService;
+import org.project12306.services.ticketservice.service.TrainStationService;
 import org.project12306.services.ticketservice.service.cache.SeatMarginCacheLoader;
 import org.project12306.services.ticketservice.service.handler.ticket.dto.TokenResultDTO;
 import org.project12306.services.ticketservice.service.handler.ticket.dto.TrainPurchaseTicketRespDTO;
@@ -92,14 +92,22 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> imple
     private final AbstractChainContext<TicketPageQueryReqDTO> ticketPageQueryAbstractChainContext;
     private final SeatMarginCacheLoader seatMarginCacheLoader;
     private final AbstractChainContext<PurchaseTicketReqDTO> purchaseTicketAbstractChainContext;
+    private final AbstractChainContext<RefundTicketReqDTO> refundReqDTOAbstractChainContext;
     private final ConfigurableEnvironment environment;
     private final SeatService seatService;
+    private final TrainStationService trainStationService;
     private final TicketAvailabilityTokenBucket ticketAvailabilityTokenBucket;
     private final TrainSeatTypeSelector trainSeatTypeSelector;
     private final TicketOrderRemoteService ticketOrderRemoteService;
+    private final PayRemoteService payRemoteService;;
     private TicketService ticketService;
+
     @Value("${framework.cache.redis.prefix:}")
     private String cacheRedisPrefix;
+
+    public PayInfoRespDTO getPayInfo(String orderSn) {
+        return payRemoteService.getPayInfo(orderSn).getData();
+    }
 
     @Override
     public TicketPageQueryRespDTO pageListTicketQueryV1(TicketPageQueryReqDTO requestParam) {
@@ -464,6 +472,57 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> imple
         ticketService = ApplicationContextHolder.getBean(TicketService.class);
     }
 
+    @Value("${ticket.availability.cache-update.type:}")
+    private String ticketAvailabilityCacheUpdateType;
+
+    @ILog
+    @Override
+    public void cancelTicketOrder(CancelTicketOrderReqDTO requestParam) {
+        Result<Void> cancelOrderResult = ticketOrderRemoteService.cancelTicketOrder(requestParam);
+        if (cancelOrderResult.isSuccess() && !StrUtil.equals(ticketAvailabilityCacheUpdateType, "binlog")) {
+            /*
+             配置项 ticketAvailabilityCacheUpdateType若值为 binlog，
+             表示通过MySQL Binlog监听自动同步库存，无需手动回滚。
+             其他值（如空或manual），需手动执行后续回滚逻辑。
+             */
+
+            //从远程中获取订单信息
+            Result<org.project12306.services.ticketservice.remote.dto.TicketOrderDetailRespDTO > ticketOrderDetailResult = ticketOrderRemoteService.queryTicketOrderByOrderSn(requestParam.getOrderSn());
+            org.project12306.services.ticketservice.remote.dto.TicketOrderDetailRespDTO  ticketOrderDetail = ticketOrderDetailResult.getData();
+            String trainId = String.valueOf(ticketOrderDetail.getTrainId());
+            String departure = ticketOrderDetail.getDeparture();
+            String arrival = ticketOrderDetail.getArrival();
+            List<TicketOrderPassengerDetailRespDTO> trainPurchaseTicketResults = ticketOrderDetail.getPassengerDetails();
+
+            try {
+                //座位解锁
+                seatService.unlock(trainId, departure, arrival, BeanUtil.convert(trainPurchaseTicketResults, TrainPurchaseTicketRespDTO.class));
+            } catch (Throwable ex) {
+                log.error("[取消订单] 订单号：{} 回滚列车DB座位状态失败", requestParam.getOrderSn(), ex);
+                throw ex;
+            }
+            //令牌桶回滚
+            ticketAvailabilityTokenBucket.rollbackInBucket(ticketOrderDetail);
+
+            try {
+                //票缓存数量回滚
+                StringRedisTemplate stringRedisTemplate = (StringRedisTemplate) distributedCache.getInstance();
+                Map<Integer, List<TicketOrderPassengerDetailRespDTO>> seatTypeMap = trainPurchaseTicketResults.stream()
+                        .collect(Collectors.groupingBy(TicketOrderPassengerDetailRespDTO::getSeatType));
+                List<RouteDTO> routeDTOList = trainStationService.listTakeoutTrainStationRoute(trainId, departure, arrival);
+                routeDTOList.forEach(each -> {
+                    String keySuffix = StrUtil.join("_", trainId, each.getStartStation(), each.getEndStation());
+                    seatTypeMap.forEach((seatType, ticketOrderPassengerDetailRespDTOList) -> {
+                        stringRedisTemplate.opsForHash()
+                                .increment(TRAIN_STATION_REMAINING_TICKET + keySuffix, String.valueOf(seatType), ticketOrderPassengerDetailRespDTOList.size());
+                    });
+                });
+            } catch (Throwable ex) {
+                log.error("[取消关闭订单] 订单号：{} 回滚列车Cache余票失败", requestParam.getOrderSn(), ex);
+                throw ex;
+            }
+        }
+    }
 
 
     private List<String> buildDepartureStationList(List<TicketListDTO> seatResults) {
@@ -491,6 +550,55 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, TicketDO> imple
             }
         }
         return trainBrandSet.stream().toList();
+    }
+
+    @Override
+    public RefundTicketRespDTO commonTicketRefund(RefundTicketReqDTO requestParam) {
+        // 责任链模式，验证 1：参数必填
+        refundReqDTOAbstractChainContext.handler(TicketChainMarkEnum.TRAIN_REFUND_TICKET_FILTER.name(), requestParam);
+
+        //远程获取订单
+        Result<org.project12306.services.ticketservice.remote.dto.TicketOrderDetailRespDTO > orderDetailRespDTOResult = ticketOrderRemoteService.queryTicketOrderByOrderSn(requestParam.getOrderSn());
+        if (!orderDetailRespDTOResult.isSuccess() && Objects.isNull(orderDetailRespDTOResult.getData())) {
+            throw new ServiceException("车票订单不存在");
+        }
+        org.project12306.services.ticketservice.remote.dto.TicketOrderDetailRespDTO ticketOrderDetailRespDTO = orderDetailRespDTOResult.getData();
+        List<TicketOrderPassengerDetailRespDTO> passengerDetails = ticketOrderDetailRespDTO.getPassengerDetails();
+        if (CollectionUtil.isEmpty(passengerDetails)) {
+            throw new ServiceException("车票子订单不存在");
+        }
+
+        RefundReqDTO refundReqDTO = new RefundReqDTO();
+        //部分退款与全额退款
+        if (RefundTypeEnum.PARTIAL_REFUND.getType().equals(requestParam.getType())) {
+            TicketOrderItemQueryReqDTO ticketOrderItemQueryReqDTO = new TicketOrderItemQueryReqDTO();
+            ticketOrderItemQueryReqDTO.setOrderSn(requestParam.getOrderSn());
+            ticketOrderItemQueryReqDTO.setOrderItemRecordIds(requestParam.getSubOrderRecordIdReqList());
+            Result<List<TicketOrderPassengerDetailRespDTO>> queryTicketItemOrderById = ticketOrderRemoteService.queryTicketItemOrderById(ticketOrderItemQueryReqDTO);
+            List<TicketOrderPassengerDetailRespDTO> partialRefundPassengerDetails = passengerDetails.stream()
+                    .filter(item -> queryTicketItemOrderById.getData().contains(item))
+                    .collect(Collectors.toList());
+            refundReqDTO.setRefundTypeEnum(RefundTypeEnum.PARTIAL_REFUND);
+            refundReqDTO.setRefundDetailReqDTOList(partialRefundPassengerDetails);
+        } else if (RefundTypeEnum.FULL_REFUND.getType().equals(requestParam.getType())) {
+            refundReqDTO.setRefundTypeEnum(RefundTypeEnum.FULL_REFUND);
+            refundReqDTO.setRefundDetailReqDTOList(passengerDetails);
+        }
+
+
+        if (CollectionUtil.isNotEmpty(passengerDetails)) {
+            Integer partialRefundAmount = passengerDetails.stream()
+                    .mapToInt(TicketOrderPassengerDetailRespDTO::getAmount)
+                    .sum();
+            refundReqDTO.setRefundAmount(partialRefundAmount);
+        }
+
+        refundReqDTO.setOrderSn(requestParam.getOrderSn());
+        Result<RefundRespDTO> refundRespDTOResult = payRemoteService.commonRefund(refundReqDTO);
+        if (!refundRespDTOResult.isSuccess() && Objects.isNull(refundRespDTOResult.getData())) {
+            throw new ServiceException("车票订单退款失败");
+        }
+        return null; // 暂时返回空实体
     }
 
     @Override

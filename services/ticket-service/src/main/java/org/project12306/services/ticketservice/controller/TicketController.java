@@ -49,8 +49,7 @@ public class TicketController {
      */
     @PostMapping("/api/ticket-service/ticket/cancel")
     public Result<Void> cancelTicketOrder(@RequestBody CancelTicketOrderReqDTO requestParam) {
-
-//        ticketService.cancelTicketOrder(requestParam);
+        ticketService.cancelTicketOrder(requestParam);
         return Results.success();
     }
 
@@ -59,8 +58,7 @@ public class TicketController {
      */
     @GetMapping("/api/ticket-service/ticket/pay/query")
     public Result<PayInfoRespDTO> getPayInfo(@RequestParam(value = "orderSn") String orderSn) {
-//        return Results.success(ticketService.getPayInfo(orderSn));
-        return null;
+        return Results.success(ticketService.getPayInfo(orderSn));
     }
 
     /**
@@ -68,7 +66,8 @@ public class TicketController {
      */
     @PostMapping("/api/ticket-service/ticket/refund")
     public Result<RefundTicketRespDTO> commonTicketRefund(@RequestBody RefundTicketReqDTO requestParam) {
-//        return Results.success(ticketService.commonTicketRefund(requestParam));
-        return null;
+        return Results.success(ticketService.commonTicketRefund(requestParam));
     }
+
+
 }

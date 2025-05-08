@@ -18,9 +18,12 @@
 package org.project12306.services.ticketservice.remote;
 
 import org.project12306.convention.result.Result;
+import org.project12306.services.ticketservice.dto.req.CancelTicketOrderReqDTO;
 import org.project12306.services.ticketservice.remote.dto.PassengerRespDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -36,4 +39,6 @@ public interface UserRemoteService {
      */
     @GetMapping("/api/user-service/inner/passenger/actual/query/ids")
     Result<List<PassengerRespDTO>> listPassengerQueryByIds(@RequestParam("username") String username, @RequestParam("ids") List<String> ids);
+
+
 }
