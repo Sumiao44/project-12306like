@@ -15,23 +15,44 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice;
+package org.project12306.services.payservice.mq.domain;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.retry.annotation.EnableRetry;
+import lombok.*;
+
+import java.io.Serializable;
+import java.util.UUID;
 
 /**
- * 支付服务应用启动器
+ * 消息体包装器
  */
-@SpringBootApplication
-@MapperScan("org.project12306.services.payservice.dao.mapper")
-@EnableFeignClients
-@EnableRetry
-public class PayServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(PayServiceApplication.class, args);
-    }
+@Data
+@Builder
+@NoArgsConstructor(force = true)
+@AllArgsConstructor
+@RequiredArgsConstructor
+public final class MessageWrapper<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 消息发送 Keys
+     */
+    @NonNull
+    private String keys;
+
+    /**
+     * 消息体
+     */
+    @NonNull
+    private T message;
+
+    /**
+     * 唯一标识，用于客户端幂等验证
+     */
+    private String uuid = UUID.randomUUID().toString();
+
+    /**
+     * 消息发送时间
+     */
+    private Long timestamp = System.currentTimeMillis();
 }

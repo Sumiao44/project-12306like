@@ -15,34 +15,33 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice.controller;
+package org.project12306.services.payservice.convert;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
-import cn.hutool.core.date.DateUtil;
-import lombok.RequiredArgsConstructor;
-import org.project12306.commons.desingnpattern.strategy.AbstractStrategyChoose;
+
+import org.project12306.commons.common.toolkit.BeanUtil;
 import org.project12306.services.payservice.common.enums.PayChannelEnum;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.project12306.services.payservice.dto.base.AliPayRequest;
+import org.project12306.services.payservice.dto.base.PayRequest;
+import org.project12306.services.payservice.dto.command.PayCommand;
 
-import java.util.Map;
+import java.util.Objects;
 
 /**
- * 支付结果回调
+ * 支付请求入参转换器
  */
-@RestController
-@RequiredArgsConstructor
-public class PayCallbackController {
-
-    private final AbstractStrategyChoose abstractStrategyChoose;
+public final class PayRequestConvert {
 
     /**
-     * 支付宝回调
-     * 调用支付宝支付后，支付宝会调用此接口发送支付结果
+     * {@link PayCommand} to {@link PayRequest}
+     *
+     * @param payCommand 支付请求参数
+     * @return {@link PayRequest}
      */
-    @PostMapping("/api/pay-service/callback/alipay")
-    public void callbackAlipay(@RequestParam Map<String, Object> requestParam) {
+    public static PayRequest command2PayRequest(PayCommand payCommand) {
+        PayRequest payRequest = null;
+        if (Objects.equals(payCommand.getChannel(), PayChannelEnum.ALI_PAY.getCode())) {
+            payRequest = BeanUtil.convert(payCommand, AliPayRequest.class);
+        }
+        return payRequest;
     }
 }

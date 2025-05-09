@@ -18,7 +18,10 @@
 package org.project12306.services.payservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.project12306.commons.web.Results;
 import org.project12306.convention.result.Result;
+import org.project12306.services.payservice.convert.PayRequestConvert;
+import org.project12306.services.payservice.dto.base.PayRequest;
 import org.project12306.services.payservice.dto.command.PayCommand;
 import org.project12306.services.payservice.dto.req.RefundReqDTO;
 import org.project12306.services.payservice.dto.resp.PayInfoRespDTO;
@@ -42,10 +45,9 @@ public class PayController {
      */
     @PostMapping("/api/pay-service/pay/create")
     public Result<PayRespDTO> pay(@RequestBody PayCommand requestParam) {
-//        PayRequest payRequest = PayRequestConvert.command2PayRequest(requestParam);
-//        PayRespDTO result = payService.commonPay(payRequest);
-//        return Results.success(result);
-        return null;
+        PayRequest payRequest = PayRequestConvert.command2PayRequest(requestParam);
+        PayRespDTO result = payService.commonPay(payRequest);
+        return Results.success(result);
     }
 
     /**
@@ -53,8 +55,7 @@ public class PayController {
      */
     @GetMapping("/api/pay-service/pay/query/order-sn")
     public Result<PayInfoRespDTO> getPayInfoByOrderSn(@RequestParam(value = "orderSn") String orderSn) {
-//        return Results.success(payService.getPayInfoByOrderSn(orderSn));
-        return null;
+        return Results.success(payService.getPayInfoByOrderSn(orderSn));
     }
 
     /**
@@ -62,8 +63,7 @@ public class PayController {
      */
     @GetMapping("/api/pay-service/pay/query/pay-sn")
     public Result<PayInfoRespDTO> getPayInfoByPaySn(@RequestParam(value = "paySn") String paySn) {
-//        return Results.success(payService.getPayInfoByPaySn(paySn));
-        return null;
+        return Results.success(payService.getPayInfoByPaySn(paySn));
     }
 
     /**
@@ -73,7 +73,6 @@ public class PayController {
     @Deprecated
     @PostMapping("/api/pay-service/refund")
     public Result<RefundRespDTO> refund(@RequestBody RefundReqDTO requestParam) {
-//        return Results.success(payService.commonRefund(requestParam));
-        return null;
+        return Results.success(payService.commonRefund(requestParam));
     }
 }

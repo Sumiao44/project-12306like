@@ -15,23 +15,20 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice;
-
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.retry.annotation.EnableRetry;
+package org.project12306.services.payservice.dto.base;
 
 /**
- * 支付服务应用启动器
+ * 支付回调请求入参
  */
-@SpringBootApplication
-@MapperScan("org.project12306.services.payservice.dao.mapper")
-@EnableFeignClients
-@EnableRetry
-public class PayServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(PayServiceApplication.class, args);
-    }
+public interface PayCallbackRequest {
+
+    /**
+     * 获取阿里支付回调入参
+     */
+    AliPayCallbackRequest getAliPayCallBackRequest();
+
+    /**
+     * 构建查找支付回调策略实现类标识
+     */
+    String buildMark();
 }

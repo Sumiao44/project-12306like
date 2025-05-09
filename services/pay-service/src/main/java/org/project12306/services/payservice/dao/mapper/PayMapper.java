@@ -15,23 +15,13 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice;
+package org.project12306.services.payservice.dao.mapper;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.retry.annotation.EnableRetry;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.project12306.services.payservice.dao.entity.PayDO;
 
 /**
- * 支付服务应用启动器
+ * 支付持久层
  */
-@SpringBootApplication
-@MapperScan("org.project12306.services.payservice.dao.mapper")
-@EnableFeignClients
-@EnableRetry
-public class PayServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(PayServiceApplication.class, args);
-    }
+public interface PayMapper extends BaseMapper<PayDO> {
 }

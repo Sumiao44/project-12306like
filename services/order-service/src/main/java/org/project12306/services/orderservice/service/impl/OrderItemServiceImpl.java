@@ -28,10 +28,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project12306.commons.common.toolkit.BeanUtil;
 import org.project12306.convention.exception.ServiceException;
+import org.project12306.services.orderservice.common.enums.OrderCanalErrorCodeEnum;
 import org.project12306.services.orderservice.dao.entity.OrderDO;
 import org.project12306.services.orderservice.dao.entity.OrderItemDO;
 import org.project12306.services.orderservice.dao.mapper.OrderItemMapper;
 import org.project12306.services.orderservice.dao.mapper.OrderMapper;
+import org.project12306.services.orderservice.dto.domain.OrderItemStatusReversalDTO;
 import org.project12306.services.orderservice.dto.req.TicketOrderItemQueryReqDTO;
 import org.project12306.services.orderservice.dto.resp.TicketOrderPassengerDetailRespDTO;
 import org.project12306.services.orderservice.service.OrderItemService;
@@ -50,6 +52,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderItemServiceImpl extends ServiceImpl<OrderItemMapper, OrderItemDO> implements OrderItemService {
     private final OrderItemMapper orderItemMapper;
+    private final OrderMapper orderMapper;
+    private final RedissonClient redissonClient;
     @Override
     public List<TicketOrderPassengerDetailRespDTO> queryTicketItemOrderById(TicketOrderItemQueryReqDTO requestParam) {
         LambdaQueryWrapper<OrderItemDO> queryWrapper = Wrappers.lambdaQuery(OrderItemDO.class)
@@ -57,5 +61,48 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemMapper, OrderItem
                 .in(OrderItemDO::getId, requestParam.getOrderItemRecordIds());
         List<OrderItemDO> orderItemDOList = orderItemMapper.selectList(queryWrapper);
         return BeanUtil.convert(orderItemDOList, TicketOrderPassengerDetailRespDTO.class);
+    }
+
+    @Override
+    @Transactional
+    public void orderItemStatusReversal(OrderItemStatusReversalDTO requestParam) {
+        LambdaQueryWrapper<OrderDO> queryWrapper = Wrappers.lambdaQuery(OrderDO.class)
+                .eq(OrderDO::getOrderSn, requestParam.getOrderSn());
+        OrderDO orderDO = orderMapper.selectOne(queryWrapper);
+        if (orderDO == null) {
+            throw new ServiceException(OrderCanalErrorCodeEnum.ORDER_CANAL_UNKNOWN_ERROR);
+        }
+        RLock lock = redissonClient.getLock(StrBuilder.create("order:status-reversal:order_sn_").append(requestParam.getOrderSn()).toString());
+        if (!lock.tryLock()) {
+            log.warn("订单重复修改状态，状态反转请求参数：{}", JSON.toJSONString(requestParam));
+        }
+        try {
+            OrderDO updateOrderDO = new OrderDO();
+            updateOrderDO.setStatus(requestParam.getOrderStatus());
+            LambdaUpdateWrapper<OrderDO> updateWrapper = Wrappers.lambdaUpdate(OrderDO.class)
+                    .eq(OrderDO::getOrderSn, requestParam.getOrderSn());
+            int orderUpdateResult = orderMapper.update(updateOrderDO, updateWrapper);
+            if (orderUpdateResult <= 0) {
+                throw new ServiceException(OrderCanalErrorCodeEnum.ORDER_STATUS_REVERSAL_ERROR);
+            }
+            if (CollectionUtil.isNotEmpty(requestParam.getOrderItemDOList())) {
+                List<OrderItemDO> orderItemDOList = requestParam.getOrderItemDOList();
+                if (CollectionUtil.isNotEmpty(orderItemDOList)) {
+                    orderItemDOList.forEach(o -> {
+                        OrderItemDO orderItemDO = new OrderItemDO();
+                        orderItemDO.setStatus(requestParam.getOrderItemStatus());
+                        LambdaUpdateWrapper<OrderItemDO> orderItemUpdateWrapper = Wrappers.lambdaUpdate(OrderItemDO.class)
+                                .eq(OrderItemDO::getOrderSn, requestParam.getOrderSn())
+                                .eq(OrderItemDO::getRealName, o.getRealName());
+                        int orderItemUpdateResult = orderItemMapper.update(orderItemDO, orderItemUpdateWrapper);
+                        if (orderItemUpdateResult <= 0) {
+                            throw new ServiceException(OrderCanalErrorCodeEnum.ORDER_ITEM_STATUS_REVERSAL_ERROR);
+                        }
+                    });
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 }

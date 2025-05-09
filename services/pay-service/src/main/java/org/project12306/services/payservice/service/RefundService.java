@@ -17,9 +17,13 @@
 
 package org.project12306.services.payservice.service;
 
+import org.project12306.services.payservice.dto.req.RefundReqDTO;
+import org.project12306.services.payservice.dto.resp.RefundRespDTO;
+
 /**
  * 退款接口层
  */
 public interface RefundService {
+
 
 }

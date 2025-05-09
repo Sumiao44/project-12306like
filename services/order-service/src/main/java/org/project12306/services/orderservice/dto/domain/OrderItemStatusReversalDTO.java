@@ -15,23 +15,42 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice;
+package org.project12306.services.orderservice.dto.domain;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.retry.annotation.EnableRetry;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.project12306.services.orderservice.dao.entity.OrderItemDO;
+
+import java.util.List;
 
 /**
- * 支付服务应用启动器
+ * 子订单状态反转实体
  */
-@SpringBootApplication
-@MapperScan("org.project12306.services.payservice.dao.mapper")
-@EnableFeignClients
-@EnableRetry
-public class PayServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(PayServiceApplication.class, args);
-    }
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class OrderItemStatusReversalDTO {
+
+    /**
+     * 订单号
+     */
+    private String orderSn;
+
+    /**
+     * 订单反转后状态
+     */
+    private Integer orderStatus;
+
+    /**
+     * 订单明细反转后状态
+     */
+    private Integer orderItemStatus;
+
+    /**
+     * 订单明细集合
+     */
+    private List<OrderItemDO> orderItemDOList;
 }

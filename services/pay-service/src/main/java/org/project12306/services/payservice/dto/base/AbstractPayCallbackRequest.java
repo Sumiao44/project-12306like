@@ -15,23 +15,27 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice;
+package org.project12306.services.payservice.dto.base;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.retry.annotation.EnableRetry;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * 支付服务应用启动器
+ * 抽象支付回调入参实体
  */
-@SpringBootApplication
-@MapperScan("org.project12306.services.payservice.dao.mapper")
-@EnableFeignClients
-@EnableRetry
-public class PayServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(PayServiceApplication.class, args);
+public abstract class AbstractPayCallbackRequest implements PayCallbackRequest {
+
+    @Getter
+    @Setter
+    private String orderRequestId;
+
+    @Override
+    public AliPayCallbackRequest getAliPayCallBackRequest() {
+        return null;
+    }
+
+    @Override
+    public String buildMark() {
+        return null;
     }
 }

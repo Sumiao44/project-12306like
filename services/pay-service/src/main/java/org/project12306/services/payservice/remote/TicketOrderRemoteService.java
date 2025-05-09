@@ -15,32 +15,27 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice.controller;
+package org.project12306.services.payservice.remote;
 
-import lombok.RequiredArgsConstructor;
-import org.project12306.commons.web.Results;
+
 import org.project12306.convention.result.Result;
-import org.project12306.services.payservice.dto.req.RefundReqDTO;
-import org.project12306.services.payservice.dto.resp.RefundRespDTO;
-import org.project12306.services.payservice.service.RefundService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.project12306.services.payservice.remote.dto.TicketOrderDetailRespDTO;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * 退款控制层
+ * 车票订单远程服务调用
  */
-@RestController
-@RequiredArgsConstructor
-public class RefundController {
-
-    private final RefundService refundService;
+@FeignClient(value = "project12306-order${unique-name:}-service", url = "${aggregation.remote-url:}")
+public interface TicketOrderRemoteService {
 
     /**
-     * 公共退款接口
+     * 跟据订单号查询车票订单
+     *
+     * @param orderSn 列车订单号
+     * @return 列车订单记录
      */
-    @PostMapping("/api/pay-service/common/refund")
-    public Result<RefundRespDTO> commonRefund(@RequestBody RefundReqDTO requestParam) {
-        return null;
-    }
+    @GetMapping("/api/order-service/order/ticket/query")
+    Result<TicketOrderDetailRespDTO> queryTicketOrderByOrderSn(@RequestParam(value = "orderSn") String orderSn);
 }

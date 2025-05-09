@@ -15,23 +15,22 @@
  * limitations under the License.
  */
 
-package org.project12306.services.payservice;
+package org.project12306.services.payservice.handler.base;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.retry.annotation.EnableRetry;
+
+import org.project12306.services.payservice.dto.base.RefundRequest;
+import org.project12306.services.payservice.dto.resp.RefundResponse;
 
 /**
- * 支付服务应用启动器
+ * 抽象退款组件
  */
-@SpringBootApplication
-@MapperScan("org.project12306.services.payservice.dao.mapper")
-@EnableFeignClients
-@EnableRetry
-public class PayServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(PayServiceApplication.class, args);
-    }
+public abstract class AbstractRefundHandler {
+
+    /**
+     * 支付退款接口
+     *
+     * @param payRequest 退款请求参数
+     * @return 退款响应参数
+     */
+    public abstract RefundResponse refund(RefundRequest payRequest);
 }

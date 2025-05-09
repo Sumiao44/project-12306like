@@ -2,6 +2,7 @@ package org.project12306.services.orderservice.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.project12306.services.orderservice.dao.entity.OrderItemDO;
+import org.project12306.services.orderservice.dto.domain.OrderItemStatusReversalDTO;
 import org.project12306.services.orderservice.dto.req.TicketOrderItemQueryReqDTO;
 import org.project12306.services.orderservice.dto.resp.TicketOrderPassengerDetailRespDTO;
 
@@ -18,4 +19,10 @@ public interface OrderItemService extends IService<OrderItemDO> {
      * @param requestParam 请求参数
      */
     List<TicketOrderPassengerDetailRespDTO> queryTicketItemOrderById(TicketOrderItemQueryReqDTO requestParam);
+    /**
+     * 子订单状态反转
+     *
+     * @param requestParam 请求参数
+     */
+    void orderItemStatusReversal(OrderItemStatusReversalDTO requestParam);
 }
