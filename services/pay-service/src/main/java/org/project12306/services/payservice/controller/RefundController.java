@@ -41,6 +41,6 @@ public class RefundController {
      */
     @PostMapping("/api/pay-service/common/refund")
     public Result<RefundRespDTO> commonRefund(@RequestBody RefundReqDTO requestParam) {
-        return null;
+        return Results.success(refundService.commonRefund(requestParam));
     }
 }

@@ -25,5 +25,11 @@ import org.project12306.services.payservice.dto.resp.RefundRespDTO;
  */
 public interface RefundService {
 
-
+    /**
+     * 公共退款接口
+     *
+     * @param requestParam 退款请求参数
+     * @return 退款返回详情
+     */
+    RefundRespDTO commonRefund(RefundReqDTO requestParam);
 }
